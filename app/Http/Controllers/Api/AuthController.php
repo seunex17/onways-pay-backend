@@ -59,4 +59,52 @@ class AuthController extends Controller
             'user' => $user,
         ], ResponseAlias::HTTP_OK);
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function resendEmailVerification(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => __('email_not_found'),
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        $otp = (new Otp)->generate($user->email, 'numeric', 6, 10);
+        Mail::to($user->email)->send(new VerifyEmailMail($otp->token));
+
+        return response()->json([
+            'message' => __('new_email_otp_sent'),
+            'user' => $user,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function verifyEmail(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => __('email_not_found'),
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        $otp = (new Otp)->validate($user->email, $request->token);
+
+        if (! $otp->status) {
+            return response()->json([
+                'message' => __('invalid_email_otp'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $user->markEmailAsVerified();
+
+        return response()->json([
+            'message' => __('email_verified'),
+            'user' => $user,
+        ], ResponseAlias::HTTP_OK);
+    }
 }

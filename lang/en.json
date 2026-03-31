@@ -1,3 +1,7 @@
 {
-    "registration_success": "Registration successful please check your email"
+    "registration_success": "Registration successful please check your email",
+    "email_not_found": "Email address does not exist in our record",
+    "new_email_otp_sent": "New OTP has been sent to your email address",
+    "invalid_email_otp": "Email OTP is invalid please check and tr again",
+    "email_verified": "Email verified successfully!"
 }
