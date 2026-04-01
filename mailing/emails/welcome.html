@@ -1,0 +1,79 @@
+---
+bodyClass: bg-slate-50
+preheader: Welcome to OnwaysPay!
+title: Welcome to OnwaysPay
+---
+
+<x-main>
+  <div class="bg-slate-50 sm:px-4 font-inter">
+    <table align="center" class="m-0 mx-auto">
+      <tr>
+        <td class="w-[560px] max-w-full">
+          <x-spacer height="40px" />
+
+          <table class="w-full shadow-sm rounded-xl overflow-hidden [border:1px_solid_theme(colors.slate.200)]">
+            <tr>
+              <td class="py-12 px-10 sm:px-6 bg-white text-center">
+                <raw>
+                  <a href="{{ url('/') }}">
+                    <img src="logo.png" src-production="{{ asset('images/email/logo.png') }}" width="200" alt="Onway" class="mx-auto">
+                  </a>
+                </raw>
+
+                <x-spacer height="40px" />
+
+                <h1 class="m-0 mb-3 text-2xl font-bold tracking-tight text-slate-900">
+                  Welcome to OnwaysPay!
+                </h1>
+
+                <p class="m-0 mb-8 text-base/relaxed text-slate-600">
+                  We're thrilled to have you join our community. OnwaysPay is designed to make your transactions seamless, secure, and lightning fast.
+                </p>
+
+                <div class="inline-block rounded-xl border border-slate-100 bg-slate-50 p-6 mb-8">
+                  <p class="m-0 text-sm font-medium text-slate-900 mb-1">Your Customer ID:</p>
+                  <span class="font-mono text-2xl font-bold tracking-wider text-indigo-600">{{ $user->customer_id }}</span>
+                </div>
+
+                <p class="m-0 mb-8 text-base/relaxed text-slate-600">
+                  You can now start using your account to send and receive payments, pay bills, and manage your finances with ease.
+                </p>
+
+                <x-spacer height="40px" />
+
+                <div class="h-px w-full bg-slate-100"></div>
+
+                <x-spacer height="32px" />
+
+                <p class="m-0 text-sm/relaxed text-slate-600">
+                  If you have any questions, feel free to reply to this email or visit our help center.
+                </p>
+
+                <x-spacer height="24px" />
+
+                <p class="m-0 text-sm font-medium text-slate-900">
+                  The <span class="font-bold text-slate-900">OnwaysPay Team</span>
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <table class="w-full text-center">
+            <tr>
+              <td class="py-8 px-6">
+                <p class="m-0 text-xs uppercase tracking-widest text-slate-400">
+                  &copy; <raw>{{ date('Y') }}</raw> OnwaysPay. All rights reserved.
+                </p>
+                <p class="mt-2 text-xs text-slate-400">
+                  You're receiving this because you just signed up for OnwaysPay.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <x-spacer height="40px" />
+        </td>
+      </tr>
+    </table>
+  </div>
+</x-main>

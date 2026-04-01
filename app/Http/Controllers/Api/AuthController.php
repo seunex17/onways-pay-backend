@@ -15,6 +15,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\VerifyEmailMail;
+use App\Mail\WelcomeMail;
+use App\Models\TransactionPin;
 use App\Models\User;
 use Ichtrojan\Otp\Otp;
 use Illuminate\Http\Request;
@@ -104,6 +106,90 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => __('email_verified'),
+            'user' => $user,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function sendPhoneVerification(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => __('email_not_found'),
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        if (User::where([
+            'phone_code' => $user->phone_code,
+            'phone' => $request->phone,
+        ])->where('email', '!=', $user->email)
+            ->exists()) {
+            return response()->json([
+                'message' => __('phone_already_verified'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $user->phone = $request->phone;
+        $user->save();
+
+        $phoneNumber = $user->phone_code.$request->phone;
+        $otp = (new Otp)->generate($phoneNumber, 'numeric', 6, 10);
+
+        // TODO - Send sms otp to user
+
+        return response()->json([
+            'message' => __('phone_otp_sent'),
+            'user' => $user,
+        ]);
+    }
+
+    public function verifyPhone(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => __('email_not_found'),
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        $otp = (new Otp)->validate($user->phone_code.$user->phone, $request->token);
+
+        if (! $otp->status) {
+            return response()->json([
+                'message' => __('invalid_phone_otp'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $user->phone_verified_at = now();
+        $user->save();
+
+        return response()->json([
+            'message' => __('phone_verified'),
+            'user' => $user,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function setTransactionPin(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => __('email_not_found'),
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        TransactionPin::updateOrCreate(['user_id' => $user->id], $request->input());
+
+        Mail::to($user->email)->send(new WelcomeMail($user));
+
+        return response()->json([
+            'message' => __('transaction_pin_updated'),
             'user' => $user,
         ], ResponseAlias::HTTP_OK);
     }

@@ -1,9 +1,12 @@
 <?php
 
 use App\Mail\VerifyEmailMail;
+use App\Mail\WelcomeMail;
+use App\Models\TransactionPin;
 use App\Models\User;
 use Ichtrojan\Otp\Otp;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
@@ -151,6 +154,172 @@ test('email verification fails if email not found', function () {
     $response = $this->postJson('/api/verify-email', [
         'email' => 'nonexistent@example.com',
         'token' => '123456',
+    ]);
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'message' => __('email_not_found'),
+        ]);
+});
+
+test('user can request phone verification OTP', function () {
+    $user = User::factory()->create([
+        'email' => 'user@example.com',
+        'phone_code' => '+234',
+    ]);
+
+    $response = $this->postJson('/api/send-phone-verification', [
+        'email' => 'user@example.com',
+        'phone' => '8123456789',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'message' => __('phone_otp_sent'),
+        ]);
+
+    $this->assertEquals($user->id, $response->json('user.id'));
+});
+
+test('phone verification fails if email not found', function () {
+    $response = $this->postJson('/api/send-phone-verification', [
+        'email' => 'nonexistent@example.com',
+        'phone' => '8123456789',
+    ]);
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'message' => __('email_not_found'),
+        ]);
+});
+
+test('phone verification fails if phone number already exists for another user', function () {
+    // Create another user with the same phone number
+    User::factory()->create([
+        'email' => 'other@example.com',
+        'phone_code' => '+234',
+        'phone' => '8123456789',
+    ]);
+
+    // Current user trying to use that phone number
+    User::factory()->create([
+        'email' => 'user@example.com',
+        'phone_code' => '+234',
+    ]);
+
+    $response = $this->postJson('/api/send-phone-verification', [
+        'email' => 'user@example.com',
+        'phone' => '8123456789',
+    ]);
+
+    $response->assertStatus(400)
+        ->assertJson([
+            'message' => __('phone_already_verified'),
+        ]);
+});
+
+test('phone verification succeeds if phone number belongs to the same user', function () {
+    $user = User::factory()->create([
+        'email' => 'user@example.com',
+        'phone_code' => '+234',
+        'phone' => '8123456789',
+    ]);
+
+    $response = $this->postJson('/api/send-phone-verification', [
+        'email' => 'user@example.com',
+        'phone' => '8123456789',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'message' => __('phone_otp_sent'),
+        ]);
+});
+
+test('user can verify phone with valid token', function () {
+    $user = User::factory()->create([
+        'email' => 'user@example.com',
+        'phone' => '8123456789',
+        'phone_verified_at' => null,
+    ]);
+
+    $otp = (new Otp)->generate($user->phone, 'numeric', 6, 10);
+
+    $response = $this->postJson('/api/verify-phone', [
+        'email' => $user->email,
+        'token' => $otp->token,
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'message' => __('phone_verified'),
+        ]);
+
+    $this->assertNotNull($user->fresh()->phone_verified_at);
+});
+
+test('verify phone fails with invalid token', function () {
+    $user = User::factory()->create([
+        'email' => 'user@example.com',
+        'phone' => '8123456789',
+    ]);
+
+    $response = $this->postJson('/api/verify-phone', [
+        'email' => $user->email,
+        'token' => 'invalid-otp',
+    ]);
+
+    $response->assertStatus(400)
+        ->assertJson([
+            'message' => __('invalid_phone_otp'),
+        ]);
+});
+
+test('verify phone fails if email not found', function () {
+    $response = $this->postJson('/api/verify-phone', [
+        'email' => 'nonexistent@example.com',
+        'token' => '123456',
+    ]);
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'message' => __('email_not_found'),
+        ]);
+});
+
+test('user can set transaction pin', function () {
+    Mail::fake();
+
+    $user = User::factory()->create([
+        'email' => 'user@example.com',
+    ]);
+
+    $response = $this->postJson('/api/set-transaction-pin', [
+        'email' => 'user@example.com',
+        'pin' => '123456',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'message' => __('transaction_pin_updated'),
+        ]);
+
+    $this->assertDatabaseHas('transaction_pins', [
+        'user_id' => $user->id,
+    ]);
+
+    $transactionPin = TransactionPin::where('user_id', $user->id)->first();
+    $this->assertTrue(Hash::check('123456', $transactionPin->pin));
+
+    Mail::assertSent(WelcomeMail::class, function ($mail) use ($user) {
+        return $mail->hasTo($user->email);
+    });
+});
+
+test('setting transaction pin fails if email not found', function () {
+    $response = $this->postJson('/api/set-transaction-pin', [
+        'email' => 'nonexistent@example.com',
+        'pin' => '123456',
     ]);
 
     $response->assertStatus(404)

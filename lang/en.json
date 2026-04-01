@@ -3,5 +3,10 @@
     "email_not_found": "Email address does not exist in our record",
     "new_email_otp_sent": "New OTP has been sent to your email address",
     "invalid_email_otp": "Email OTP is invalid please check and tr again",
-    "email_verified": "Email verified successfully!"
+    "email_verified": "Email verified successfully!",
+    "phone_already_verified": "Phone number already exist",
+    "phone_otp_sent": "OTP has been sent to your phone number",
+    "try / catch": "OTP is invalid or expired!",
+    "phone_verified": "PHone verified successfully!",
+    "transaction_pin_updated": "Transaction pin has been set successfully"
 }
