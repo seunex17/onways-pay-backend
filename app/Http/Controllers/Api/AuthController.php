@@ -191,6 +191,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => __('transaction_pin_updated'),
             'user' => $user,
+            'token' => $user->createToken('mobile')->plainTextToken,
         ], ResponseAlias::HTTP_OK);
     }
 }

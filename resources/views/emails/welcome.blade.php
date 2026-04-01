@@ -61,7 +61,7 @@
                   </p>
                   <div style="margin-bottom: 32px; display: inline-block; border-radius: 12px; border-width: 1px; border-color: #f1f5f9; background-color: #f8fafc; padding: 24px;">
                     <p style="margin: 0 0 4px; font-size: 14px; font-weight: 500; color: #0f172a;">Your Customer ID:</p>
-                    <span style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 24px; font-weight: 700; letter-spacing: 0.05em; color: #4f46e5;">{{ $user-&gt;customer_id }}</span>
+                    <span style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 24px; font-weight: 700; letter-spacing: 0.05em; color: #4f46e5;">{{ $user->customer_id }}</span>
                   </div>
                   <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.625; color: #475569;">
                     You can now start using your account to send and receive payments, pay bills, and manage your finances with ease.
