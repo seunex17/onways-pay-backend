@@ -25,4 +25,11 @@ class UserController extends Controller
 
         return response()->json($user, ResponseAlias::HTTP_OK);
     }
+
+    public function walletBalance(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json($user->creditBalance(), ResponseAlias::HTTP_OK);
+    }
 }

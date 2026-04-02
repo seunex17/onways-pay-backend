@@ -20,6 +20,25 @@ test('it returns user data when authenticated', function () {
         ]);
 });
 
+test('it returns user wallet balance when authenticated', function () {
+    $user = User::factory()->create();
+
+    Sanctum::actingAs($user);
+
+    $user->creditAdd(100.50);
+
+    $response = $this->getJson('/api/wallet-balance');
+
+    $response->assertOk()
+        ->assertJsonFragment([100.5]);
+});
+
+test('it returns unauthorized when not authenticated for wallet balance', function () {
+    $response = $this->getJson('/api/wallet-balance');
+
+    $response->assertUnauthorized();
+});
+
 test('it returns unauthorized when not authenticated', function () {
     $response = $this->getJson('/api/check-login');
 

@@ -15,4 +15,5 @@ Route::post('/set-transaction-pin', [ApiAuthController::class, 'setTransactionPi
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // User Controller
     Route::get('/check-login', [UserController::class, 'checkLogin']);
+    Route::get('/wallet-balance', [UserController::class, 'walletBalance']);
 });
