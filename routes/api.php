@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController as ApiAuthController;
+use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // User Controller
     Route::get('/check-login', [UserController::class, 'checkLogin']);
     Route::get('/wallet-balance', [UserController::class, 'walletBalance']);
+
+    // Transaction Controller
+    Route::post('/deposit', [TransactionController::class, 'deposit']);
 });
