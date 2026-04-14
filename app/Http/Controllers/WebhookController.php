@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 
 use App\Events\TransactionStatusEvent;
 use App\Models\CryptoPayment;
+use App\Models\MomoPayment;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -71,5 +72,36 @@ class WebhookController extends Controller
             }
         }
         //        \Log::info(json_encode($data, JSON_PRETTY_PRINT));
+    }
+
+    public function handleTouchpay(Request $request)
+    {
+        $data = $request->all();
+        $ref = $data['partner_transaction_id'];
+        $transaction = Transaction::with('user')
+            ->where('reference', $ref)->first();
+
+        if ($transaction) {
+            if ($data['status'] === 'FAILED') {
+                $transaction->status = 'canceled';
+                $transaction->save();
+                broadcast(new TransactionStatusEvent($transaction));
+            }
+        }
+
+        if ($data['status'] === 'SUCCESSFUL') {
+            $momoPayment = MomoPayment::where('transaction_id', $transaction->id)->first();
+            $momoPayment->status = $data['status'];
+            $momoPayment->save();
+
+            $transaction->status = 'processed';
+            $transaction->save();
+
+            $transaction->user->creditAdd($transaction->amount, 'Wallet Deposit');
+
+            broadcast(new TransactionStatusEvent($transaction));
+        }
+
+        // \Log::info(json_encode($data, JSON_PRETTY_PRINT));
     }
 }

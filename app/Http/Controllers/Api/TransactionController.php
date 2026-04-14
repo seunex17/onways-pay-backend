@@ -15,9 +15,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CryptoPayment;
+use App\Models\MomoPayment;
 use App\Models\Transaction;
 use App\Services\CryptoPaymentService;
 use App\Services\ExchangeService;
+use App\Services\TouchPayService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -40,6 +42,8 @@ class TransactionController extends Controller
         switch ($request->mode) {
             case 'crypto':
                 return $this->cryptoDeposit($transaction, $request);
+            case 'momo':
+                return $this->mobileMoneyDeposit($transaction, $request);
 
             default:
                 return response()->json([], ResponseAlias::HTTP_BAD_REQUEST);
@@ -94,5 +98,46 @@ class TransactionController extends Controller
             'payment' => $payment,
             'transaction' => Transaction::find($transaction->id),
         ], ResponseAlias::HTTP_CREATED);
+    }
+
+    public function mobileMoneyDeposit(Transaction $transaction, Request $request)
+    {
+        $momoPayment = TouchPayService::collectPayment([
+            'email' => $request->user()->email,
+            'firstname' => $request->user()->first_name,
+            'lastname' => $request->user()->last_name,
+            'mobile_number' => $request->phone,
+            'otp' => $request->otp ?? '',
+            'amount' => $request->amount,
+            'provider' => $request->provider,
+            'transaction_ref' => $transaction->reference,
+        ]);
+
+        if (! $momoPayment['status']) {
+            $transaction->status = 'canceled';
+            $transaction->description = $momoPayment['message'];
+            $transaction->save();
+
+            return response()->json([
+                'message' => $momoPayment['message'],
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $data = $momoPayment['data'];
+        $payment = MomoPayment::create([
+            'transaction_id' => $transaction->id,
+            'reference' => $data['idFromClient'],
+            'amount' => $data['amount'],
+            'fee' => $data['fees'],
+            'service' => ucwords($request->provider),
+            'service_code' => $data['serviceCode'],
+            'recipient_number' => $data['recipientNumber'],
+            'status' => $data['status'],
+        ]);
+
+        return response()->json([
+            'payment' => $payment,
+            'transaction' => Transaction::find($transaction->id),
+        ]);
     }
 }

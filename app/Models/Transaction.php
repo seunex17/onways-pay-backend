@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'type',
@@ -41,5 +44,15 @@ class Transaction extends Model
     public function deposit(): HasOne
     {
         return $this->hasOne(Deposit::class);
+    }
+
+    /**
+     * Get the momo payment associated with the transaction.
+     *
+     * @return HasOne<MomoPayment, $this>
+     */
+    public function momoPayment(): HasOne
+    {
+        return $this->hasOne(MomoPayment::class);
     }
 }
