@@ -96,7 +96,6 @@ class TouchPayService
     public static function sendMoney(array $data)
     {
         $response = Http::withoutVerifying()
-            ->withDigestAuth(config('touchpay.username'), config('touchpay.password'))
             ->withHeaders([
                 'Authorization' => 'Basic '.base64_encode(config('touchpay.username').':'.config('touchpay.password')),
             ])
@@ -110,6 +109,8 @@ class TouchPayService
                 'login_api' => config('touchpay.login_agent'),
                 'password_api' => config('touchpay.password_agent'),
             ]);
+
+        return $response->json();
 
         if ($response->successful()) {
             return [
