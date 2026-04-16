@@ -110,8 +110,6 @@ class TouchPayService
                 'password_api' => config('touchpay.password_agent'),
             ]);
 
-        return $response->json();
-
         if ($response->successful()) {
             return [
                 'status' => true,

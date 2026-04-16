@@ -79,4 +79,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Exchange::class);
     }
+
+    /**
+     * Get the payment requests for the user.
+     *
+     * @return HasMany<PaymentRequest, $this>
+     */
+    public function paymentRequests(): HasMany
+    {
+        return $this->hasMany(PaymentRequest::class);
+    }
 }

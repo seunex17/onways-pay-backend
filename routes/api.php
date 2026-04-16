@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController as ApiAuthController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -22,4 +23,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/deposit', [TransactionController::class, 'deposit']);
     Route::post('/prepare-exchange', [TransactionController::class, 'prepareExchange']);
     Route::post('/exchange', [TransactionController::class, 'exchange']);
+
+    // Payment Controller
+    Route::prefix('/payment')->group(function () {
+        Route::post('/request', [PaymentController::class, 'request']);
+    });
 });
