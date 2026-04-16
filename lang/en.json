@@ -9,5 +9,6 @@
     "try / catch": "OTP is invalid or expired!",
     "phone_verified": "PHone verified successfully!",
     "transaction_pin_updated": "Transaction pin has been set successfully",
-    "deposit_to_wallet": "Deposit to OnwaysPay Wallet"
+    "deposit_to_wallet": "Deposit to OnwaysPay Wallet",
+    "invalid_amount": "The provide amoutn is invalid"
 }

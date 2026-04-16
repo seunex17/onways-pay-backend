@@ -15,6 +15,7 @@ Route::get('/', function () {
 Route::get('/test', function () {
     // MessagingService::sendSms('2250709586293', 'From Zubdev');
     // $res = CryptoPaymentService::whiteLabel(5, time(), 'USDT');
+    $res = CryptoPaymentService::getBalance();
     // dd($res);
     // TransactionStatusEvent::dispatch(Transaction::latest()->first());
     $data = [
@@ -27,7 +28,9 @@ Route::get('/test', function () {
         'provider' => 'mtn',
     ];
 
-    $res = TouchPayService::collectPayment($data);
+    // $res = TouchPayService::collectPayment($data);
+    // $res = TouchPayService::checkBalance();
+    // $res = TouchPayService::sendMoney($data);
     dd($res);
 });
 

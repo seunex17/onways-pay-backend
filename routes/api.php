@@ -20,4 +20,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // Transaction Controller
     Route::post('/deposit', [TransactionController::class, 'deposit']);
+    Route::post('/prepare-exchange', [TransactionController::class, 'prepareExchange']);
+    Route::post('/exchange', [TransactionController::class, 'exchange']);
 });

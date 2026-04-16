@@ -68,4 +68,24 @@ class CryptoPaymentService
             'message' => $response->json(),
         ];
     }
+
+    public static function getBalance(): array
+    {
+        $response = Http::withHeaders([
+            'general_api_key' => config('oxapay.general_api_key'),
+        ])
+            ->get(self::BASE_URL.'general/account/balance');
+
+        if ($response->successful()) {
+            return [
+                'status' => true,
+                'data' => $response->json()['data'],
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => $response->json(),
+        ];
+    }
 }

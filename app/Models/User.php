@@ -69,4 +69,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Deposit::class);
     }
+
+    /**
+     * Get the exchanges for the user.
+     *
+     * @return HasMany<Exchange, $this>
+     */
+    public function exchanges(): HasMany
+    {
+        return $this->hasMany(Exchange::class);
+    }
 }

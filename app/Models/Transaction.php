@@ -55,4 +55,14 @@ class Transaction extends Model
     {
         return $this->hasOne(MomoPayment::class);
     }
+
+    /**
+     * Get the exchange associated with the transaction.
+     *
+     * @return HasOne<Exchange, $this>
+     */
+    public function exchange(): HasOne
+    {
+        return $this->hasOne(Exchange::class);
+    }
 }

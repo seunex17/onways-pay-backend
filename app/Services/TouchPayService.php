@@ -24,11 +24,20 @@ class TouchPayService
         'wave' => 'CI_PAIEMENTWAVE_TP',
     ];
 
+    const array cashInServiceCode = [
+        'mtn' => 'CASHINMTNPART',
+        'orange-money' => 'CASHINOMCIPART',
+        'moov' => 'CASHINMOOVPART',
+        'wave' => 'CI_CASHIN_WAVE_PART',
+    ];
+
     public static function collectPayment(array $data)
     {
         $response = Http::withoutVerifying()
-            ->withDigestAuth(config('touchpay.username'), config('touchpay.password'))
-            ->put(self::baseUrl('transaction'), [
+            ->withHeaders([
+                'Authorization' => 'Basic '.base64_encode(config('touchpay.username').':'.config('touchpay.password')),
+            ])
+            ->put('https://apidist.gutouch.net/apidist/sec/touchpayapi/WINTA9061/transaction?loginAgent='.config('touchpay.login_agent').'&passwordAgent='.config('touchpay.password_agent'), [
                 'idFromClient' => $data['transaction_ref'],
                 'additionnalInfos' => [
                     'recipientEmail' => $data['email'],
@@ -44,6 +53,62 @@ class TouchPayService
                 'callback' => config('touchpay.callback_url'),
                 'recipientNumber' => $data['mobile_number'],
                 'serviceCode' => self::serviceCode[$data['provider']],
+            ]);
+
+        if ($response->successful()) {
+            return [
+                'status' => true,
+                'data' => $response->json(),
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => $response->json()['detailMessage'],
+        ];
+    }
+
+    public static function checkBalance(): array
+    {
+        $response = Http::withoutVerifying()
+            ->withHeaders([
+                'Authorization' => 'Basic '.base64_encode(config('touchpay.username').':'.config('touchpay.password')),
+            ])
+            ->post('https://apidist.gutouch.net/apidist/sec/WINTA9061/get_balance', [
+                'partner_id' => config('touchpay.partner_id'),
+                'login_api' => config('touchpay.login_agent'),
+                'password_api' => config('touchpay.password_agent'),
+            ]);
+
+        if ($response->successful()) {
+            return [
+                'status' => true,
+                'data' => $response->json(),
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => $response->json()['errorMessage'],
+        ];
+    }
+
+    public static function sendMoney(array $data)
+    {
+        $response = Http::withoutVerifying()
+            ->withDigestAuth(config('touchpay.username'), config('touchpay.password'))
+            ->withHeaders([
+                'Authorization' => 'Basic '.base64_encode(config('touchpay.username').':'.config('touchpay.password')),
+            ])
+            ->post('https://apidist.gutouch.net/apidist/sec/WINTA9061/cashin', [
+                'partner_transaction_id' => $data['transaction_ref'],
+                'partner_id' => config('touchpay.partner_id'),
+                'amount' => $data['amount'],
+                'call_back_url' => config('touchpay.callback_url'),
+                'recipient_phone_number' => $data['mobile_number'],
+                'service_id' => self::cashInServiceCode[$data['provider']],
+                'login_api' => config('touchpay.login_agent'),
+                'password_api' => config('touchpay.password_agent'),
             ]);
 
         if ($response->successful()) {
