@@ -65,4 +65,14 @@ class Transaction extends Model
     {
         return $this->hasOne(Exchange::class);
     }
+
+    /**
+     * Get the withdrawal associated with the transaction.
+     *
+     * @return HasOne<Withdrawal, $this>
+     */
+    public function withdrawal(): HasOne
+    {
+        return $this->hasOne(Withdrawal::class);
+    }
 }

@@ -88,4 +88,89 @@ class CryptoPaymentService
             'message' => $response->json(),
         ];
     }
+
+    public static function payout(float $amount, string $orderID, string $address, string $currency = 'USDT'): array
+    {
+        $network = match ($currency) {
+            'USDT' => 'TRC20',
+            'BTC' => 'Bitcoin',
+            'ETH', 'USDC' => 'Ethereum',
+            'BNB' => 'BSC',
+            'DOGE' => 'Dogecoin',
+            'LTC' => 'Litecoin',
+            'SOL' => 'Solana',
+            'TRX' => 'Tron',
+            'SHIB' => 'BSC',
+            'TON' => 'The Open Network',
+            'XMR' => 'Monero',
+            default => '',
+        };
+
+        $price = self::price($currency);
+        $amount = $amount / $price;
+
+        $response = Http::withHeaders([
+            'payout_api_key' => config('oxapay.payout_api_key'),
+        ])->post(self::BASE_URL.'payout', [
+            'amount' => $amount,
+            'currency' => $currency,
+            'network' => $network,
+            'memo' => $orderID,
+            'address' => $address,
+            'callback_url' => 'https://onwayspay.zubdev.net/webhook/oxapay',
+            // 'callback_url' => route('webhook.oxapay'),
+        ]);
+
+        if ($response->successful()) {
+            return [
+                'status' => true,
+                'data' => $response->json()['data'],
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => $response->json(),
+        ];
+    }
+
+    public static function price(string $currency)
+    {
+        $response = Http::get(self::BASE_URL.'common/prices');
+
+        if ($response->successful()) {
+            $data = $response->json();
+
+            return $data['data'][$currency];
+        }
+
+        return 0;
+    }
+
+    public static function swap(string $from, string $to, float $amount)
+    {
+        $price = self::price($from);
+        $amount = $amount / $price;
+
+        $response = Http::withHeaders([
+            'general_api_key' => config('oxapay.general_api_key'),
+        ])
+            ->post(self::BASE_URL.'general/swap', [
+                'from_currency' => $from,
+                'to_currency' => $to,
+                'amount' => $amount,
+            ]);
+
+        if ($response->successful()) {
+            return [
+                'status' => true,
+                'data' => $response->json()['data'],
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => $response->json(),
+        ];
+    }
 }

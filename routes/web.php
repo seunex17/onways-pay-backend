@@ -14,7 +14,15 @@ Route::get('/', function () {
 
 Route::get('/test', function () {
     // MessagingService::sendSms('2250709586293', 'From Zubdev');
-    // $res = CryptoPaymentService::whiteLabel(5, time(), 'USDT');
+    // $res = CryptoPaymentService::whiteLabel(20, time(), 'BNB');
+    $res = CryptoPaymentService::payout(
+        8,
+        time(),
+        '0xde5833959aee02b55c8bd44c403d153d44454fdb',
+        'BNB');
+
+    // $res = CryptoPaymentService::swap('USDT', 'BNB', 10);
+
     // $res = CryptoPaymentService::getBalance();
     // dd($res);
     // TransactionStatusEvent::dispatch(Transaction::latest()->first());
@@ -30,7 +38,7 @@ Route::get('/test', function () {
 
     // $res = TouchPayService::collectPayment($data);
     // $res = TouchPayService::checkBalance();
-    $res = TouchPayService::sendMoney($data);
+    // $res = TouchPayService::sendMoney($data);
 
     dd($res);
 });

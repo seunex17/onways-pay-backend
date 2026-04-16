@@ -27,5 +27,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Payment Controller
     Route::prefix('/payment')->group(function () {
         Route::post('/request', [PaymentController::class, 'request']);
+        Route::post('/withdraw', [PaymentController::class, 'withdraw']);
     });
 });

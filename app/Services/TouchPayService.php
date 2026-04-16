@@ -93,7 +93,7 @@ class TouchPayService
         ];
     }
 
-    public static function sendMoney(array $data)
+    public static function sendMoney(array $data): array
     {
         $response = Http::withoutVerifying()
             ->withHeaders([
