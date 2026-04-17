@@ -3,6 +3,7 @@
 use App\Events\TransactionStatusEvent;
 use App\Http\Controllers\WebhookController;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Services\CryptoPaymentService;
 use App\Services\MessagingService;
 use App\Services\TouchPayService;
@@ -15,11 +16,13 @@ Route::get('/', function () {
 Route::get('/test', function () {
     // MessagingService::sendSms('2250709586293', 'From Zubdev');
     // $res = CryptoPaymentService::whiteLabel(20, time(), 'BNB');
-    $res = CryptoPaymentService::payout(
-        8,
-        time(),
-        '0xde5833959aee02b55c8bd44c403d153d44454fdb',
-        'BNB');
+    $user = User::find(4);
+    $user->creditAdd(1000, 'Deposit');
+    //    $res = CryptoPaymentService::payout(
+    //        8,
+    //        time(),
+    //        '0xde5833959aee02b55c8bd44c403d153d44454fdb',
+    //        'BNB');
 
     // $res = CryptoPaymentService::swap('USDT', 'BNB', 10);
 
@@ -40,7 +43,7 @@ Route::get('/test', function () {
     // $res = TouchPayService::checkBalance();
     // $res = TouchPayService::sendMoney($data);
 
-    dd($res);
+    // dd($res);
 });
 
 Route::name('webhook.')->prefix('webhook')->group(function () {

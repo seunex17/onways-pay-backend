@@ -13,11 +13,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\PaymentRequestEvent;
+use App\Events\TransactionStatusEvent;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentRequest;
 use App\Models\Transaction;
 use App\Models\TransactionPin;
+use App\Models\User;
 use App\Models\Withdrawal;
+use App\Services\AccountService;
 use App\Services\CryptoPaymentService;
 use App\Services\ExchangeService;
 use App\Services\TouchPayService;
@@ -170,6 +174,130 @@ class PaymentController extends Controller
 
         return response()->json([
             'transaction' => Transaction::find($transaction->id),
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function scanCode(Request $request)
+    {
+        $code = $request->code;
+        $sqids = new Sqids(minLength: 10);
+
+        $qrData = $sqids->decode($code);
+        if (empty($qrData) || count($qrData) !== 1) {
+            return response()->json([
+                'message' => __('invalid_payment_code'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $paymentRequestId = $qrData[0];
+
+        $paymentRequest = PaymentRequest::with('user')
+            ->find($paymentRequestId);
+
+        if (! $paymentRequest) {
+            return response()->json([
+                'message' => __('invalid_payment_code'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        if ($paymentRequest->user_id === $request->user()->id) {
+            return response()->json([
+                'message' => __('you_attempt_to_make_invalid_payment'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        if ($paymentRequest->expired_at->isPast()) {
+            $paymentRequest->status = 'expired';
+            $paymentRequest->save();
+
+            return response()->json([
+                'message' => __('payment_expired'),
+            ]);
+        }
+
+        if (! $request->user()->hasCredits($paymentRequest->amount)) {
+            return response()->json([
+                'message' => __('insufficient_balance'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $paymentRequest->status = 'initiate';
+        $paymentRequest->save();
+        broadcast(new PaymentRequestEvent($paymentRequest))->toOthers();
+
+        Transaction::create([
+            'user_id' => $request->user()->id,
+            'type' => 'debit',
+            'purpose' => 'transfer',
+            'reference' => $paymentRequest->reference,
+            'amount' => $paymentRequest->amount,
+        ]);
+
+        Transaction::create([
+            'user_id' => $paymentRequest->user_id,
+            'type' => 'credit',
+            'purpose' => 'transfer',
+            'reference' => $paymentRequest->reference,
+            'amount' => $paymentRequest->amount,
+        ]);
+
+        return response()->json($paymentRequest, ResponseAlias::HTTP_OK);
+    }
+
+
+    /**
+     * @throws \Climactic\Credits\Exceptions\InsufficientCreditsException
+     */
+    public function makePayment(Request $request)
+    {
+        $paymentRequest = PaymentRequest::with('user')
+            ->find($request->id);
+
+        if (! $paymentRequest) {
+            return response()->json([
+                'message' => __('invalid_payment_code'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        if (! AccountService::verifyPin($request->user(), $request->pin)) {
+            return response()->json([
+                'message' => __('invalid_transaction_pin'),
+            ]);
+        }
+
+        if (! $request->user()->hasCredits($paymentRequest->amount)) {
+            return response()->json([
+                'message' => __('insufficient_balance'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $amount = $paymentRequest->amount - $paymentRequest->fee;
+
+        /** @var User $recipient */
+        $recipient = $paymentRequest->user;
+
+        $request->user()->creditDeduct($paymentRequest->amount, $paymentRequest->description);
+        $recipient->creditAdd($amount, $paymentRequest->description);
+
+        $paymentRequest->status = 'complete';
+        $paymentRequest->save();
+
+        Transaction::where('reference', $paymentRequest->reference)->update([
+            'status' => 'processed',
+        ]);
+
+        $receiverTransaction = Transaction::where([
+            'user_id' => $paymentRequest->user_id,
+            'reference' => $paymentRequest->reference,
+        ])->first();
+
+        broadcast(new TransactionStatusEvent($receiverTransaction))->toOthers();
+
+        return response()->json([
+            'transaction' => Transaction::where([
+                'user_id' => $request->user()->id,
+                'reference' => $paymentRequest->reference,
+            ])->first(),
         ], ResponseAlias::HTTP_OK);
     }
 }

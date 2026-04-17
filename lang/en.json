@@ -12,5 +12,8 @@
     "deposit_to_wallet": "Deposit to OnwaysPay Wallet",
     "invalid_amount": "The provide amount is invalid",
     "insufficient_balance": "Insufficient Balance",
-    "invalid_transaction_pin": "Invalid Transaction Pin"
+    "invalid_transaction_pin": "Invalid Transaction Pin",
+    "you_attempt_to_make_invalid_payment": "You have attempt to make an invalid payment",
+    "invalid_payment_code": "Invalid payment code provided",
+    "payment_expired": "Payment has expired"
 }
