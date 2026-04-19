@@ -19,6 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentRequest;
 use App\Models\Transaction;
 use App\Models\TransactionPin;
+use App\Models\Transfer;
 use App\Models\User;
 use App\Models\Withdrawal;
 use App\Services\AccountService;
@@ -28,7 +29,9 @@ use App\Services\TouchPayService;
 use Climactic\Credits\Exceptions\InsufficientCreditsException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Sqids\Sqids;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
@@ -244,9 +247,8 @@ class PaymentController extends Controller
         return response()->json($paymentRequest, ResponseAlias::HTTP_OK);
     }
 
-
     /**
-     * @throws \Climactic\Credits\Exceptions\InsufficientCreditsException
+     * @throws InsufficientCreditsException
      */
     public function makePayment(Request $request)
     {
@@ -299,5 +301,97 @@ class PaymentController extends Controller
                 'reference' => $paymentRequest->reference,
             ])->first(),
         ], ResponseAlias::HTTP_OK);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function transfer(Request $request)
+    {
+        $user = $request->user();
+
+        if (! AccountService::verifyPin($request->user(), $request->pin)) {
+            return response()->json([
+                'message' => __('invalid_transaction_pin'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        if (! $user->hasCredits($request->amount)) {
+            return response()->json([
+                'message' => __('insufficient_balance'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = DB::transaction(function () use ($request) {
+                $sender = User::where('id', $request->user()->id)->lockForUpdate()->first();
+                $receiver = User::where('customer_id', $request->customer_id)->lockForUpdate()->first();
+
+                if (! $receiver) {
+                    throw new \Exception(__('invalid_customer_id'));
+                }
+
+                if (! $sender->hasCredits($request->amount)) {
+                    throw new \Exception(__('insufficient_balance'));
+                }
+
+                $reference = 'OWP-TFR-'.Str::random(10);
+
+                $debit = Transaction::create([
+                    'user_id' => $sender->id,
+                    'type' => 'debit',
+                    'purpose' => 'transfer',
+                    'status' => 'processed',
+                    'reference' => $reference,
+                    'amount' => $request->amount,
+                    'payment_method' => 'Wallet',
+                ]);
+
+                Transfer::create([
+                    'sender_id' => $sender->id,
+                    'receiver_id' => $receiver->id,
+                    'reference' => $reference,
+                    'amount' => $request->amount,
+                    'status' => 'success',
+                    'description' => $request->description,
+                    'transaction_id' => $debit->id,
+                ]);
+
+                Transaction::create([
+                    'user_id' => $receiver->id,
+                    'type' => 'credit',
+                    'purpose' => 'transfer',
+                    'reference' => 'OWP-CR-'.Str::random(10),
+                    'amount' => $request->amount,
+                    'payment_method' => 'Wallet',
+                    'status' => 'processed',
+                ]);
+
+                $sender->creditTransfer($receiver, $request->amount, $request->description);
+
+                // TODO - Send push notification to receiver
+
+                return $debit;
+            });
+
+            return response()->json(['transaction' => $result]);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function validateCustomerId(Request $request)
+    {
+        $user = User::where('customer_id', $request->customer_id)
+            ->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => __('invalid_customer_id'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json($user, ResponseAlias::HTTP_OK);
     }
 }

@@ -15,5 +15,6 @@
     "invalid_transaction_pin": "Invalid Transaction Pin",
     "you_attempt_to_make_invalid_payment": "You have attempt to make an invalid payment",
     "invalid_payment_code": "Invalid payment code provided",
-    "payment_expired": "Payment has expired"
+    "payment_expired": "Payment has expired",
+    "invalid_customer_id": "Invalid Customer ID"
 }
