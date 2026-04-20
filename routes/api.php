@@ -20,6 +20,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/wallet-balance', [UserController::class, 'walletBalance']);
 
     // Transaction Controller
+    Route::get('/transactions', [TransactionController::class, 'transactions']);
+
     Route::post('/deposit', [TransactionController::class, 'deposit']);
     Route::post('/prepare-exchange', [TransactionController::class, 'prepareExchange']);
     Route::post('/exchange', [TransactionController::class, 'exchange']);

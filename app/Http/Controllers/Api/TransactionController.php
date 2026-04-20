@@ -308,4 +308,24 @@ class TransactionController extends Controller
             'payment' => $payment,
         ], ResponseAlias::HTTP_OK);
     }
+
+    public function transactions(Request $request)
+    {
+        $transactions = Transaction::where('user_id', $request->user()->id)
+            ->where('status', 'processed')
+            ->when($request->type, function ($query, $type) {
+                $query->where('type', $type);
+            })
+            ->when($request->start_date, function ($query, $start_date) {
+                $query->whereDate('created_at', '>=', $start_date);
+            })
+            ->when($request->end_date, function ($query, $end_date) {
+                $query->whereDate('created_at', '<=', $end_date);
+            })
+            ->latest()
+            ->take(500)
+            ->get();
+
+        return response()->json($transactions, ResponseAlias::HTTP_OK);
+    }
 }
