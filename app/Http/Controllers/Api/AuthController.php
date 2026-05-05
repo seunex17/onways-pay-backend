@@ -20,6 +20,7 @@ use App\Models\TransactionPin;
 use App\Models\User;
 use Ichtrojan\Otp\Otp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -192,6 +193,37 @@ class AuthController extends Controller
             'message' => __('transaction_pin_updated'),
             'user' => $user,
             'token' => $user->createToken('mobile')->plainTextToken,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function login(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'email' => 'required|string|email',
+            'password' => 'required',
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => $validate->errors()->first(),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $input = $request->input();
+
+        if (! Auth::attempt($input)) {
+            return response()->json([
+                'message' => __('invalid_credentials'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $user = Auth::user();
+        $user->tokens()->delete();
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
         ], ResponseAlias::HTTP_OK);
     }
 }

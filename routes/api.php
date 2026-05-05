@@ -13,6 +13,7 @@ Route::post('/verify-email', [ApiAuthController::class, 'verifyEmail']);
 Route::post('/send-phone-verification', [ApiAuthController::class, 'sendPhoneVerification']);
 Route::post('/verify-phone', [ApiAuthController::class, 'verifyPhone']);
 Route::post('/set-transaction-pin', [ApiAuthController::class, 'setTransactionPin']);
+Route::post('/login', [ApiAuthController::class, 'login']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // User Controller
@@ -35,5 +36,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/scan-code', [PaymentController::class, 'scanCode']);
         Route::post('/make-payment', [PaymentController::class, 'makePayment']);
         Route::post('/transfer', [PaymentController::class, 'transfer']);
+    });
+
+    // User Controller
+    Route::prefix('/account')->group(function () {
+        Route::post('/update-profile-photo', [UserController::class, 'updateProfilePhoto']);
     });
 });
