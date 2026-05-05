@@ -18,5 +18,7 @@
     "payment_expired": "Payment has expired",
     "invalid_customer_id": "Invalid Customer ID",
     "invalid_credentials": "Invalid email or password",
-    "profile_updated": "Profile Updated!"
+    "profile_updated": "Profile Updated!",
+    "password_updated": "Password Updated!",
+    "old_password_incorrect": "Old password is incorrect"
 }

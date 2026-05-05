@@ -41,5 +41,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // User Controller
     Route::prefix('/account')->group(function () {
         Route::post('/update-profile-photo', [UserController::class, 'updateProfilePhoto']);
+
+        Route::put('/edit-profile', [UserController::class, 'editProfile']);
+        Route::put('/update-password', [UserController::class, 'updatePassword']);
     });
 });
