@@ -12,6 +12,7 @@
         "php": "^8.3",
         "climactic/laravel-credits": "^1.4",
         "ichtrojan/laravel-otp": "^2.0",
+        "kreait/laravel-firebase": "^7.1",
         "laravel/framework": "^13.0",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",

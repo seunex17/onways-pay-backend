@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordUpdateMail;
+use App\Models\Device;
 use App\Models\TransactionPin;
 use App\Services\MessagingService;
 use Ichtrojan\Otp\Otp;
@@ -228,5 +229,11 @@ class UserController extends Controller
         return response()->json([
             'message' => __('account_deleted'),
         ], ResponseAlias::HTTP_OK);
+    }
+
+    public function addDevice(Request $request)
+    {
+        $user = $request->user();
+        $device = Device::updateOrCreate(['user_id' => $user->id], $request->input());
     }
 }

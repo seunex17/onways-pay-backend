@@ -43,6 +43,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/update-profile-photo', [UserController::class, 'updateProfilePhoto']);
         Route::post('/send-pin-change-otp', [UserController::class, 'sendPinChangeOtp']);
         Route::post('/verify-pin-change-otp', [UserController::class, 'verifyPinChangeOtp']);
+        Route::post('/add-device', [UserController::class, 'addDevice']);
 
         Route::put('/edit-profile', [UserController::class, 'editProfile']);
         Route::put('/update-password', [UserController::class, 'updatePassword']);
