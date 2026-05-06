@@ -41,8 +41,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // User Controller
     Route::prefix('/account')->group(function () {
         Route::post('/update-profile-photo', [UserController::class, 'updateProfilePhoto']);
+        Route::post('/send-pin-change-otp', [UserController::class, 'sendPinChangeOtp']);
+        Route::post('/verify-pin-change-otp', [UserController::class, 'verifyPinChangeOtp']);
 
         Route::put('/edit-profile', [UserController::class, 'editProfile']);
         Route::put('/update-password', [UserController::class, 'updatePassword']);
+        Route::put('/change-transaction-pin', [UserController::class, 'changeTransactionPin']);
+        Route::put('/update-push-notification', [UserController::class, 'updatePushNotification']);
+
+        Route::delete('/delete-account', [UserController::class, 'deleteAccount']);
     });
 });

@@ -218,6 +218,13 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        if ($user->account_delete_at) {
+            return response()->json([
+                'message' => __('invalid_credentials'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
         $user->tokens()->delete();
         $token = $user->createToken('mobile')->plainTextToken;
 

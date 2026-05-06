@@ -20,5 +20,12 @@
     "invalid_credentials": "Invalid email or password",
     "profile_updated": "Profile Updated!",
     "password_updated": "Password Updated!",
-    "old_password_incorrect": "Old password is incorrect"
+    "old_password_incorrect": "Old password is incorrect",
+    "sms_send_failed": "Unable to send SMS Please try again later",
+    "sms_sent_successfully": "OTP han been sent to you phone number",
+    "otp_sms_message": ":appName PIN reset code: :otp. Valid for :minute minutes.",
+    "too_many_attempts": "Too many attempt please wait :seconds seconds before you try again",
+    "otp_not_verified": "Invalid OTP please try again",
+    "otp_verified": "OTP verified",
+    "account_deleted": "Account delete successfully!"
 }

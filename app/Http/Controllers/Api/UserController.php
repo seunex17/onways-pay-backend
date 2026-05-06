@@ -15,9 +15,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordUpdateMail;
+use App\Models\TransactionPin;
+use App\Services\MessagingService;
+use Ichtrojan\Otp\Otp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -72,7 +76,7 @@ class UserController extends Controller
 
         if ($validate->fails()) {
             return response()->json([
-                'message' => $validate->errors()->first()
+                'message' => $validate->errors()->first(),
             ], ResponseAlias::HTTP_BAD_REQUEST);
         }
 
@@ -94,7 +98,7 @@ class UserController extends Controller
 
         if ($validate->fails()) {
             return response()->json([
-                'message' => $validate->errors()->first()
+                'message' => $validate->errors()->first(),
             ], ResponseAlias::HTTP_BAD_REQUEST);
         }
         $user = $request->user();
@@ -104,7 +108,7 @@ class UserController extends Controller
             ], ResponseAlias::HTTP_BAD_REQUEST);
         }
 
-        $user->password  = bcrypt($request->password);
+        $user->password = bcrypt($request->password);
         $user->save();
 
         Mail::to($user->email)->send(new PasswordUpdateMail($user));
@@ -113,6 +117,116 @@ class UserController extends Controller
 
         return response()->json([
             'message' => __('password_updated'),
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function sendPinChangeOtp(Request $request)
+    {
+        $user = $request->user();
+        $key = 'resend-sms-otp:'.$user->id;
+
+        if (RateLimiter::tooManyAttempts($key, $maxAttempts = 1)) {
+            $seconds = RateLimiter::availableIn($key);
+
+            return response()->json([
+                'message' => __('too_many_attempts', ['seconds' => $seconds]),
+            ]);
+        }
+
+        RateLimiter::hit($key, 60);
+
+        $phone = $user->phone_code.$user->phone;
+
+        $otp = (new Otp)->generate($phone, 'numeric', 6, 5);
+
+        if (! MessagingService::sendSms($phone, __('otp_sms_message', [
+            'otp' => $otp->token,
+            'appName' => config('app.name'),
+            'minute' => '5',
+        ]))) {
+            return response()->json([
+                'message' => __('sms_send_failed'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json([
+            'message' => __('sms_sent_successfully'),
+        ]);
+    }
+
+    public function verifyPinChangeOtp(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'otp' => ['required', 'string', 'min:6', 'max:6'],
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => $validate->errors()->first(),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $user = $request->user();
+
+        $phone = $user->phone_code.$user->phone;
+        $otp = (new Otp)->validate($phone, $request->otp);
+
+        if (! $otp->status) {
+            return response()->json([
+                'message' => __('otp_not_verified'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json([
+            'message' => __('otp_verified'),
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function changeTransactionPin(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'pin' => ['required', 'string', 'min:4', 'max:4'],
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => $validate->errors()->first(),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $user = $request->user();
+        TransactionPin::updateOrCreate(['user_id' => $user->id], $request->input());
+
+        return response()->json([
+            'message' => __('transaction_pin_updated'),
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function updatePushNotification(Request $request)
+    {
+        $user = $request->user();
+        $user->enable_push_notification = ! $user->enable_push_notification;
+        $user->save();
+
+        return response()->json([
+            'message' => __('profile_updated'),
+            'user' => $user,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+        $user->account_delete_at = now();
+        $user->save();
+
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => __('account_deleted'),
         ], ResponseAlias::HTTP_OK);
     }
 }

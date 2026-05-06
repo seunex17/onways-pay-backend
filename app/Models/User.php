@@ -39,6 +39,8 @@ class User extends Authenticatable
         'date_of_birth',
         'address',
         'city',
+        'enable_push_notification',
+        'account_delete_at'
     ];
 
     /**
@@ -52,6 +54,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
+            'enable_push_notification' => 'boolean',
+            'account_delete_at' => 'datetime',
         ];
     }
 

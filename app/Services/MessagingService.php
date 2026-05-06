@@ -19,21 +19,20 @@ class MessagingService
 {
     public function __construct() {}
 
-    public static function sendSms(string $to, string $message)
+    public static function sendSms(string $to, string $message): bool
     {
         try {
-            $response = Http::post('https://api-public-2.mtarget.fr/messages', [
+            $response = Http::post('https://api-public.mtarget.fr/messages', [
                 'username' => config('mtarget.username'),
                 'password' => config('mtarget.password'),
                 'msisdn' => '+'.$to,
                 'msg' => $message,
-                'serviceid' => config('mtarget.serviceid'),
                 'sender' => config('mtarget.sender'),
             ])->json();
 
-            dd($response);
+            return true;
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            return false;
         }
     }
 }

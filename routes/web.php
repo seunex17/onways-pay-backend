@@ -3,7 +3,6 @@
 use App\Events\TransactionStatusEvent;
 use App\Http\Controllers\WebhookController;
 use App\Models\Transaction;
-use App\Models\User;
 use App\Services\CryptoPaymentService;
 use App\Services\MessagingService;
 use App\Services\TouchPayService;
@@ -14,10 +13,8 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-    // MessagingService::sendSms('2250709586293', 'From Zubdev');
+    MessagingService::sendSms('2250709586293', 'Message sent from OnwaysPay');
     // $res = CryptoPaymentService::whiteLabel(20, time(), 'BNB');
-    $user = User::find(4);
-    $user->creditAdd(1000, 'Deposit');
     //    $res = CryptoPaymentService::payout(
     //        8,
     //        time(),
