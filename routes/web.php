@@ -2,10 +2,10 @@
 
 use App\Events\TransactionStatusEvent;
 use App\Http\Controllers\WebhookController;
-    use App\Models\Transaction;
-    use App\Models\User;
-    use App\Services\CryptoPaymentService;
-use App\Services\MessagingService;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Services\CryptoPaymentService;
+use App\Services\NotificationService;
 use App\Services\TouchPayService;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +15,7 @@ Route::get('/', function () {
 
 Route::get('/test', function () {
     $user = User::find(4);
-    \App\Services\NotificationService::sendPushNotification($user, [
+    NotificationService::sendPushNotification($user, [
         'title' => 'hello world',
         'body' => 'hello world',
     ]);

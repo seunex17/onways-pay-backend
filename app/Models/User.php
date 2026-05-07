@@ -40,7 +40,7 @@ class User extends Authenticatable
         'address',
         'city',
         'enable_push_notification',
-        'account_delete_at'
+        'account_delete_at',
     ];
 
     /**

@@ -27,5 +27,9 @@
     "too_many_attempts": "Too many attempt please wait :seconds seconds before you try again",
     "otp_not_verified": "Invalid OTP please try again",
     "otp_verified": "OTP verified",
-    "account_deleted": "Account delete successfully!"
+    "account_deleted": "Account delete successfully!",
+    "payment_received": "Payment Received!",
+    "payment_receive_info": "You have received :amount from :sender",
+    "money_received": "Money Received",
+    "money_received_info": ":sender have sent you :amount FCFA. Money has been settle into your wallet."
 }

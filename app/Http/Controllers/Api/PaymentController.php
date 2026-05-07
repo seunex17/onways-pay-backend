@@ -25,6 +25,7 @@ use App\Models\Withdrawal;
 use App\Services\AccountService;
 use App\Services\CryptoPaymentService;
 use App\Services\ExchangeService;
+use App\Services\NotificationService;
 use App\Services\TouchPayService;
 use Climactic\Credits\Exceptions\InsufficientCreditsException;
 use Illuminate\Http\Client\ConnectionException;
@@ -293,6 +294,12 @@ class PaymentController extends Controller
             'reference' => $paymentRequest->reference,
         ])->first();
 
+        $user = User::find($paymentRequest->user_id);
+        NotificationService::sendPushNotification($user, [
+            'title' => __('payment_received'),
+            'body' => __('payment_receive_info', ['amount' => $paymentRequest->amount, 'sender' => $request->user()->name]),
+        ]);
+
         broadcast(new TransactionStatusEvent($receiverTransaction))->toOthers();
 
         return response()->json([
@@ -369,7 +376,10 @@ class PaymentController extends Controller
 
                 $sender->creditTransfer($receiver, $request->amount, $request->description);
 
-                // TODO - Send push notification to receiver
+                NotificationService::sendPushNotification($receiver, [
+                    'title' => __('money_received'),
+                    'body' => __('money_receive_info', ['amount' => $request->amount, 'sender' => $request->user()->name]),
+                ]);
 
                 return $debit;
             });
