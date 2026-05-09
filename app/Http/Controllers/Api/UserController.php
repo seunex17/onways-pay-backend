@@ -138,8 +138,6 @@ class UserController extends Controller
             ]);
         }
 
-        RateLimiter::hit($key, 60);
-
         $phone = $user->phone_code.$user->phone;
 
         $otp = (new Otp)->generate($phone, 'numeric', 6, 5);

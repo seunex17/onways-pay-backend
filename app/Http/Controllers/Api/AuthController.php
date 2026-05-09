@@ -18,10 +18,12 @@ use App\Mail\VerifyEmailMail;
 use App\Mail\WelcomeMail;
 use App\Models\TransactionPin;
 use App\Models\User;
+use App\Services\MessagingService;
 use Ichtrojan\Otp\Otp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -124,6 +126,18 @@ class AuthController extends Controller
             ], ResponseAlias::HTTP_NOT_FOUND);
         }
 
+        $key = 'resend-sms-otp:'.$user->id;
+
+        if (RateLimiter::tooManyAttempts($key, $maxAttempts = 1)) {
+            $seconds = RateLimiter::availableIn($key);
+
+            return response()->json([
+                'message' => __('too_many_attempts', ['seconds' => $seconds]),
+            ]);
+        }
+
+        RateLimiter::hit($key, 60);
+
         if (User::where([
             'phone_code' => $user->phone_code,
             'phone' => $request->phone,
@@ -140,7 +154,11 @@ class AuthController extends Controller
         $phoneNumber = $user->phone_code.$request->phone;
         $otp = (new Otp)->generate($phoneNumber, 'numeric', 6, 10);
 
-        // TODO - Send sms otp to user
+        MessagingService::sendSms($phoneNumber, __('otp_sms_message', [
+            'otp' => $otp->token,
+            'appName' => config('app.name'),
+            'minute' => '10',
+        ]));
 
         return response()->json([
             'message' => __('phone_otp_sent'),
