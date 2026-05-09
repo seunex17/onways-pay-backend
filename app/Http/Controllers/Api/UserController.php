@@ -16,6 +16,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordUpdateMail;
 use App\Models\Device;
+use App\Models\Notification;
 use App\Models\TransactionPin;
 use App\Services\MessagingService;
 use Ichtrojan\Otp\Otp;
@@ -235,5 +236,40 @@ class UserController extends Controller
     {
         $user = $request->user();
         $device = Device::updateOrCreate(['user_id' => $user->id], $request->input());
+    }
+
+    public function notifications(Request $request)
+    {
+        $notifications = Notification::where('user_id', $request->user()->id)
+            ->latest()
+            ->take(500)
+            ->get();
+
+        return response()->json([
+            'notifications' => $notifications,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function markNotificationRead(Request $request)
+    {
+        $notification = Notification::findOrFail($request->id);
+        $notification->read = true;
+        $notification->save();
+
+        return response()->json([
+            'notification' => $notification,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function unreadNotifications(Request $request)
+    {
+        $notifications = Notification::where('user_id', $request->user()->id)
+            ->where('read', false)
+            ->take(1)
+            ->get();
+
+        return response()->json([
+            'notifications' => $notifications,
+        ], ResponseAlias::HTTP_OK);
     }
 }

@@ -19,9 +19,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // User Controller
     Route::get('/check-login', [UserController::class, 'checkLogin']);
     Route::get('/wallet-balance', [UserController::class, 'walletBalance']);
+    Route::get('/notifications', [UserController::class, 'notifications']);
+    Route::get('/unread-notifications', [UserController::class, 'unreadNotifications']);
+
+    Route::put('/mark-notification-read', [UserController::class, 'markNotificationRead']);
 
     // Transaction Controller
     Route::get('/transactions', [TransactionController::class, 'transactions']);
+    Route::get('/recent-transactions', [TransactionController::class, 'recentTransactions']);
 
     Route::post('/deposit', [TransactionController::class, 'deposit']);
     Route::post('/prepare-exchange', [TransactionController::class, 'prepareExchange']);

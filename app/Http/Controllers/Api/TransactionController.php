@@ -328,4 +328,15 @@ class TransactionController extends Controller
 
         return response()->json($transactions, ResponseAlias::HTTP_OK);
     }
+
+    public function recentTransactions(Request $request)
+    {
+        $transactions = Transaction::where('user_id', $request->user()->id)
+            ->where('status', 'processed')
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return response()->json($transactions, ResponseAlias::HTTP_OK);
+    }
 }
