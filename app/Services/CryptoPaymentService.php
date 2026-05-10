@@ -52,8 +52,7 @@ class CryptoPaymentService
             'pay_currency' => $currency,
             'network' => $network,
             'order_id' => $orderID,
-            'callback_url' => 'https://onwayspay.zubdev.net/webhook/oxapay',
-            // 'callback_url' => route('webhook.oxapay'),
+            'callback_url' => config('oxapay.callback_url'),
         ]);
 
         if ($response->successful()) {
@@ -117,8 +116,95 @@ class CryptoPaymentService
             'network' => $network,
             'memo' => $orderID,
             'address' => $address,
-            'callback_url' => 'https://onwayspay.zubdev.net/webhook/oxapay',
-            // 'callback_url' => route('webhook.oxapay'),
+            'callback_url' => config('oxapay.callback_url'),
+        ]);
+
+        if ($response->successful()) {
+            return [
+                'status' => true,
+                'data' => $response->json()['data'],
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => $response->json(),
+        ];
+    }
+
+    public static function exchangePayout(float $amount, string $orderID, string $address, string $currency = 'USDT'): array
+    {
+        $network = match ($currency) {
+            'USDT' => 'TRC20',
+            'BTC' => 'Bitcoin',
+            'ETH', 'USDC' => 'Ethereum',
+            'BNB' => 'BSC',
+            'DOGE' => 'Dogecoin',
+            'LTC' => 'Litecoin',
+            'SOL' => 'Solana',
+            'TRX' => 'Tron',
+            'SHIB' => 'BSC',
+            'TON' => 'The Open Network',
+            'XMR' => 'Monero',
+            default => '',
+        };
+
+        $price = self::price($currency);
+        $amount = $amount / $price;
+
+        $response = Http::withHeaders([
+            'payout_api_key' => config('oxapay.payout_api_key'),
+        ])->post(self::BASE_URL.'payout', [
+            'amount' => $amount,
+            'currency' => $currency,
+            'network' => $network,
+            'memo' => $orderID,
+            'address' => $address,
+            'callback_url' => config('oxapay.exchange_callback_url'),
+        ]);
+
+        if ($response->successful()) {
+            return [
+                'status' => true,
+                'data' => $response->json()['data'],
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => $response->json(),
+        ];
+    }
+
+    public static function withdrawalPayout(float $amount, string $orderID, string $address, string $currency = 'USDT'): array
+    {
+        $network = match ($currency) {
+            'USDT' => 'TRC20',
+            'BTC' => 'Bitcoin',
+            'ETH', 'USDC' => 'Ethereum',
+            'BNB' => 'BSC',
+            'DOGE' => 'Dogecoin',
+            'LTC' => 'Litecoin',
+            'SOL' => 'Solana',
+            'TRX' => 'Tron',
+            'SHIB' => 'BSC',
+            'TON' => 'The Open Network',
+            'XMR' => 'Monero',
+            default => '',
+        };
+
+        $price = self::price($currency);
+        $amount = $amount / $price;
+
+        $response = Http::withHeaders([
+            'payout_api_key' => config('oxapay.payout_api_key'),
+        ])->post(self::BASE_URL.'payout', [
+            'amount' => $amount,
+            'currency' => $currency,
+            'network' => $network,
+            'memo' => $orderID,
+            'address' => $address,
+            'callback_url' => config('oxapay.withdrawal_callback_url'),
         ]);
 
         if ($response->successful()) {

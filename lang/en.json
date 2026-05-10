@@ -31,5 +31,11 @@
     "payment_received": "Payment Received!",
     "payment_receive_info": "You have received :amount from :sender",
     "money_received": "Money Received",
-    "money_received_info": ":sender have sent you :amount FCFA. Money has been settle into your wallet."
+    "money_received_info": ":sender have sent you :amount FCFA. Money has been settle into your wallet.",
+    "wallet_deposited": "Wallet Deposited!",
+    "wallet_deposited_info": ":amount has been deposited into your :appName wallet",
+    "exchange_processed": "Your Exchange Has Been Processed",
+    "exchange_process_info": "You have successfully exchange :fromCurrency to :toCurrency the process has been complete successfully",
+    "withdraw_processed": "Your Withdrawal Has Been Processed!",
+    "withdraw_processed_info": "The amount of :amount :currency has been send to your :method wallet"
 }

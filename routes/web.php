@@ -52,4 +52,6 @@ Route::get('/test', function () {
 Route::name('webhook.')->prefix('webhook')->group(function () {
     Route::post('/oxapay', [WebhookController::class, 'handleOxapay'])->name('oxapay');
     Route::post('/touchpay', [WebhookController::class, 'handleTouchpay'])->name('touchpay');
+    Route::post('/oxapay-exchange', [WebhookController::class, 'handleOxapayExchange'])->name('oxapay-exchange');
+    Route::post('/oxapay-withdraw', [WebhookController::class, 'handleOxapayWithdraw'])->name('oxapay-withdraw');
 });
