@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('otp:clean')->everyFiveMinutes();
+Schedule::command('telescope:prune')->daily();
