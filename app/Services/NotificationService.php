@@ -32,14 +32,16 @@ class NotificationService
         $data['id'] = Str::uuid()->toString();
         $device = Device::where('user_id', $user->id)->first();
 
-        try {
-            $message = CloudMessage::new()
-                ->withData($data)
-                ->withHighestPossiblePriority()
-                ->withToken($device->token);
-            app('firebase.messaging')->send($message);
-        } catch (MessagingException $e) {
-            Log::info($e->getMessage());
+        if ($device) {
+            try {
+                $message = CloudMessage::new()
+                    ->withData($data)
+                    ->withHighestPossiblePriority()
+                    ->withToken($device->token);
+                app('firebase.messaging')->send($message);
+            } catch (MessagingException $e) {
+                Log::info($e->getMessage());
+            }
         }
     }
 }

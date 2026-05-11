@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CryptoPayment;
+use App\Models\Deposit;
 use App\Models\Exchange;
 use App\Models\MomoPayment;
 use App\Models\Transaction;
@@ -79,6 +80,14 @@ class TransactionController extends Controller
             ], ResponseAlias::HTTP_BAD_REQUEST);
         }
 
+        Deposit::create([
+            'user_id' => $request->user()->id,
+            'transaction_id' => $transaction->id,
+            'amount' => $rate * $transaction->amount,
+            'payment_method' => $request->mode,
+            'payment_source' => $request->currency,
+        ]);
+
         $data = $cryptoRes['data'];
         $payment = CryptoPayment::create([
             'transaction_id' => $transaction->id,
@@ -103,6 +112,14 @@ class TransactionController extends Controller
 
     public function mobileMoneyDeposit(Transaction $transaction, Request $request)
     {
+        Deposit::create([
+            'user_id' => $request->user()->id,
+            'transaction_id' => $transaction->id,
+            'amount' => $request->amount,
+            'payment_method' => $request->mode,
+            'payment_source' => $request->phone,
+        ]);
+
         $momoPayment = TouchPayService::collectPayment([
             'email' => $request->user()->email,
             'firstname' => $request->user()->first_name,
@@ -312,7 +329,6 @@ class TransactionController extends Controller
     public function transactions(Request $request)
     {
         $transactions = Transaction::where('user_id', $request->user()->id)
-            ->where('status', 'processed')
             ->when($request->type, function ($query, $type) {
                 $query->where('type', $type);
             })

@@ -6,5 +6,5 @@ return [
     'partner_id' => env('TOUCHPAY_PARTNERID', ''),
     'username' => env('TOUCHPAY_USERNAME', ''),
     'password_agent' => env('TOUCHPAY_PASSWORDAGENT', ''),
-    'callback_url' => env('TOUCHPAY_CALLBACKURL', 'https://onwayspay.zubdev.net/webhook/touchpay'),
+    'callback_url' => env('TOUCHPAY_CALLBACKURL', ''),
 ];

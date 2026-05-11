@@ -143,12 +143,7 @@ class WebhookController extends Controller
             $momoPayment->status = $data['status'];
             $momoPayment->save();
 
-            $transaction->status = 'processed';
-            $transaction->save();
-
-            $transaction->user->creditAdd($transaction->amount, 'Wallet Deposit');
-
-            broadcast(new TransactionStatusEvent($transaction));
+            TransactionService::process($transaction);
         }
 
         // \Log::info(json_encode($data, JSON_PRETTY_PRINT));

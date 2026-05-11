@@ -77,6 +77,7 @@ class PaymentController extends Controller
         $amount = $request->amount;
         $exchangeAmount = $amount;
         $transactionFee = 0;
+        $transactionFee = (config('fees.withdrawal') / 100) * $request->amount;
 
         $transactionPin = TransactionPin::where('user_id', $request->user()->id)->first();
 
@@ -101,17 +102,13 @@ class PaymentController extends Controller
                     'message' => __('invalid_amount'),
                 ], ResponseAlias::HTTP_BAD_REQUEST);
             }
-
-            $transactionFee = (config('fees.withdrawal') / 100) * $exchangeAmount;
         }
 
-        if ($request->amount < 10) {
+        if ($exchangeAmount < 10) {
             return response()->json([
                 'message' => __('invalid_amount'),
             ], ResponseAlias::HTTP_BAD_REQUEST);
         }
-
-        $transactionFee = (config('fees.withdrawal') / 100) * $exchangeAmount;
 
         $transaction = Transaction::create([
             'user_id' => $request->user()->id,
@@ -128,7 +125,7 @@ class PaymentController extends Controller
             'method' => $request->input('method'),
             'currency' => $request->input('currency'),
             'destination' => $request->destination,
-            'amount' => $exchangeAmount,
+            'amount' => $request->amount,
             'fee' => $transactionFee,
         ]);
 
@@ -157,7 +154,9 @@ class PaymentController extends Controller
             $withdrawal->save();
             $request->user()->creditDeduct($withdrawal->amount, 'Withdrawal to '.$withdrawal->destination);
         } else {
+            $rate = ExchangeService::rate(config('exchange.currency'), 'USD');
             $amount = $withdrawal->amount - $withdrawal->fee;
+            $amount = $amount * $rate;
 
             $cryptoPayment = CryptoPaymentService::withdrawalPayout(
                 $amount,
@@ -166,12 +165,32 @@ class PaymentController extends Controller
                 $withdrawal->currency,
             );
 
-            if (! $cryptoPayment['status'] && $cryptoPayment['data'] === null) {
-                $transaction->status = 'processing';
-                $transaction->save();
+            if (! $cryptoPayment['status']) {
+                $errorType = $cryptoPayment['message']['error']['key'];
+                switch ($errorType) {
+                    case 'invalid_address': {
+                        $transaction->status = 'canceled';
+                        $transaction->save();
 
-                $withdrawal->status = 'hold';
-                $withdrawal->save();
+                        $withdrawal->status = 'hold';
+                        $withdrawal->save();
+
+                        broadcast(new TransactionStatusEvent($transaction));
+
+                        return response()->json([
+                            'message' => __('invalid_address'),
+                        ], ResponseAlias::HTTP_BAD_REQUEST);
+                    }
+                    default: {
+                        $transaction->status = 'processing';
+                        $transaction->save();
+
+                        $withdrawal->status = 'hold';
+                        $withdrawal->save();
+
+                        break;
+                    }
+                }
             }
 
             WithdrawPayout::create([

@@ -37,5 +37,6 @@
     "exchange_processed": "Your Exchange Has Been Processed",
     "exchange_process_info": "You have successfully exchange :fromCurrency to :toCurrency the process has been complete successfully",
     "withdraw_processed": "Your Withdrawal Has Been Processed!",
-    "withdraw_processed_info": "The amount of :amount :currency has been send to your :method wallet"
+    "withdraw_processed_info": "The amount of :amount :currency has been send to your :method wallet",
+    "invalid_address": "The specified address is invalid. Please check and try again."
 }

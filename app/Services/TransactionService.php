@@ -49,7 +49,7 @@ class TransactionService
             ->with('user')
             ->first();
 
-        $deposit?->user->creditAdd($deposit->amount, 'Deposit');
+        $deposit->user->creditAdd($deposit->amount, 'Deposit');
 
         $transaction->status = 'processed';
         $transaction->save();
