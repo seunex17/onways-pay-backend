@@ -90,7 +90,8 @@ class TransactionService
                 $exchangePayout = ExchangePayout::create([
                     'exchange_id' => $exchange->id,
                     'uuid' => $uuid,
-                    'payment_reference' => $cryptoPayment['track_id'],
+                    'payment_reference' => $cryptoPayment['data']['track_id'],
+                    'tries' => 0,
                 ]);
             }
         }
@@ -120,7 +121,8 @@ class TransactionService
                 WithdrawPayout::create([
                     'withdrawal_id' => $withdrawal->id,
                     'uuid' => $uuid,
-                    'payment_reference' => $cryptoPayment['track_id'],
+                    'payment_reference' => $cryptoPayment['data']['track_id'],
+                    'tries' => 0,
                 ]);
             }
         }

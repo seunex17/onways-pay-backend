@@ -235,6 +235,8 @@ class WebhookController extends Controller
                 if ($transaction instanceof Transaction) {
                     $transaction->status = 'processed';
                     $transaction->save();
+
+                    broadcast(new TransactionStatusEvent($transaction));
                 }
 
                 $withdrawPayout->status = 'complete';

@@ -22,6 +22,7 @@ use App\Models\TransactionPin;
 use App\Models\Transfer;
 use App\Models\User;
 use App\Models\Withdrawal;
+use App\Models\WithdrawPayout;
 use App\Services\AccountService;
 use App\Services\CryptoPaymentService;
 use App\Services\ExchangeService;
@@ -104,7 +105,7 @@ class PaymentController extends Controller
             $transactionFee = (config('fees.withdrawal') / 100) * $exchangeAmount;
         }
 
-        if ($request->amoun < 10) {
+        if ($request->amount < 10) {
             return response()->json([
                 'message' => __('invalid_amount'),
             ], ResponseAlias::HTTP_BAD_REQUEST);
@@ -158,7 +159,7 @@ class PaymentController extends Controller
         } else {
             $amount = $withdrawal->amount - $withdrawal->fee;
 
-            $cryptoPayment = CryptoPaymentService::payout(
+            $cryptoPayment = CryptoPaymentService::withdrawalPayout(
                 $amount,
                 $transaction->reference,
                 $withdrawal->destination,
@@ -172,6 +173,13 @@ class PaymentController extends Controller
                 $withdrawal->status = 'hold';
                 $withdrawal->save();
             }
+
+            WithdrawPayout::create([
+                'withdrawal_id' => $withdrawal->id,
+                'uuid' => Str::uuid(),
+                'payment_reference' => $cryptoPayment['data']['track_id'],
+                'tries' => 0,
+            ]);
 
             $request->user()->creditDeduct($withdrawal->amount, 'Withdrawal to '.$withdrawal->destination." ($withdrawal->currency)");
         }
