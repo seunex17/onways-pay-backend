@@ -14,8 +14,8 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-    $user = User::find(1);
-    $user->creditAdd(100000);
+//    $user = User::find(1);
+//    $user->creditAdd(100000);
 //    NotificationService::sendPushNotification($user, [
 //        'title' => 'hello world',
 //        'body' => 'hello world',
