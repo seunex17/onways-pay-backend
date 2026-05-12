@@ -140,13 +140,13 @@ class WebhookController extends Controller
 
         if ($data['status'] === 'SUCCESSFUL') {
             $momoPayment = MomoPayment::where('transaction_id', $transaction->id)->first();
-            $momoPayment->status = $data['status'];
-            $momoPayment->save();
+            if ($momoPayment) {
+                $momoPayment->status = $data['status'];
+                $momoPayment->save();
+            }
 
             TransactionService::process($transaction);
         }
-
-        // \Log::info(json_encode($data, JSON_PRETTY_PRINT));
     }
 
     public function handleOxapayExchange(Request $request)

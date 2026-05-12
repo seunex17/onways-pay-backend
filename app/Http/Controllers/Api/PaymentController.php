@@ -16,6 +16,7 @@ namespace App\Http\Controllers\Api;
 use App\Events\PaymentRequestEvent;
 use App\Events\TransactionStatusEvent;
 use App\Http\Controllers\Controller;
+use App\Models\MomoPayment;
 use App\Models\PaymentRequest;
 use App\Models\Transaction;
 use App\Models\TransactionPin;
@@ -130,6 +131,12 @@ class PaymentController extends Controller
         ]);
 
         if ($request->input('method') === 'momo') {
+            if ($exchangeAmount < 102) {
+                return response()->json([
+                    'message' => __('minimum_withdrawal_amount', ['amount' => '102 FCFA']),
+                ], ResponseAlias::HTTP_BAD_REQUEST);
+            }
+
             $touchPay = TouchPayService::sendMoney([
                 'transaction_ref' => $transaction->reference,
                 'email' => $request->user()->email,
@@ -141,17 +148,20 @@ class PaymentController extends Controller
             ]);
 
             if (! $touchPay['status']) {
-                $transaction->status = 'processing';
+                $transaction->status = 'canceled';
                 $transaction->save();
 
-                $withdrawal->status = 'hold';
-            } else {
-                $transaction->status = 'processed';
-                $transaction->save();
+                $withdrawal->status = 'failed';
+                $withdrawal->save();
 
-                $withdrawal->status = 'success';
+                return response()->json([
+                    'message' => __('service_not_available'),
+                ], ResponseAlias::HTTP_BAD_REQUEST);
             }
-            $withdrawal->save();
+
+            $transaction->status = 'processing';
+            $transaction->save();
+
             $request->user()->creditDeduct($withdrawal->amount, 'Withdrawal to '.$withdrawal->destination);
         } else {
             $rate = ExchangeService::rate(config('exchange.currency'), 'USD');

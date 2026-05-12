@@ -98,7 +98,7 @@ class TransactionService
     }
 
     protected static function prepareWithdraw(Transaction $transaction)
-    {
+    : void {
         $withdrawal = Withdrawal::where('transaction_id', $transaction->id)
             ->with('user')
             ->first();

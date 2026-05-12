@@ -102,7 +102,7 @@ class TouchPayService
             ->post('https://apidist.gutouch.net/apidist/sec/WINTA9061/cashin', [
                 'partner_transaction_id' => $data['transaction_ref'],
                 'partner_id' => config('touchpay.partner_id'),
-                'amount' => $data['amount'],
+                'amount' => floor($data['amount']),
                 'call_back_url' => config('touchpay.callback_url'),
                 'recipient_phone_number' => $data['mobile_number'],
                 'service_id' => self::cashInServiceCode[$data['provider']],
@@ -119,7 +119,7 @@ class TouchPayService
 
         return [
             'status' => false,
-            'message' => $response->json()['detailMessage'],
+            'message' => $response->json(),
         ];
     }
 

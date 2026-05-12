@@ -38,5 +38,7 @@
     "exchange_process_info": "You have successfully exchange :fromCurrency to :toCurrency the process has been complete successfully",
     "withdraw_processed": "Your Withdrawal Has Been Processed!",
     "withdraw_processed_info": "The amount of :amount :currency has been send to your :method wallet",
-    "invalid_address": "The specified address is invalid. Please check and try again."
+    "invalid_address": "The specified address is invalid. Please check and try again.",
+    "minimum_withdrawal_amount": "The minimum withdraw amount is :amount",
+    "service_not_available": "Service is not available please try again later"
 }

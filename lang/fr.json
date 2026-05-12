@@ -38,5 +38,7 @@
     "exchange_process_info": "Vous avez converti avec succès :fromCurrency en :toCurrency. Le processus est terminé.",
     "withdraw_processed": "Votre retrait a été traité !",
     "withdraw_processed_info": "Le montant de :amount :currency a été envoyé vers votre portefeuille :method",
-    "invalid_address": "L'adresse spécifiée est invalide. Veuillez vérifier et réessayer."
+    "invalid_address": "L'adresse spécifiée est invalide. Veuillez vérifier et réessayer.",
+    "minimum_withdrawal_amount": "Le montant minimum de retrait est de :amount",
+    "service_not_available": "Le service n'est pas disponible, veuillez réessayer plus tard"
 }
