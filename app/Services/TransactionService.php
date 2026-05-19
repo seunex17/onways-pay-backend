@@ -97,33 +97,48 @@ class TransactionService
         }
     }
 
+
+    /**
+     */
     protected static function prepareWithdraw(Transaction $transaction)
     : void {
         $withdrawal = Withdrawal::where('transaction_id', $transaction->id)
             ->with('user')
+            ->where('status', '!=', 'success')
             ->first();
         $uuid = \Str::uuid()->toString();
 
         if ($withdrawal) {
-            $cryptoPayment = CryptoPaymentService::withdrawalPayout(
-                $withdrawal->amount = -$withdrawal->fee,
-                $uuid,
-                $withdrawal->destination,
-                $withdrawal->currency,
-            );
+            if ($withdrawal->method === 'momo') {
+                $user = $withdrawal->user;
+                $withdrawal->status = 'success';
+                $withdrawal->save();
 
-            if ($cryptoPayment['status'] && $cryptoPayment['data'] !== null) {
-                $transaction->status = 'processing';
+                $transaction->status = 'processed';
                 $transaction->save();
 
                 broadcast(new TransactionStatusEvent($transaction));
+            } else {
+                $cryptoPayment = CryptoPaymentService::withdrawalPayout(
+                    $withdrawal->amount = -$withdrawal->fee,
+                    $uuid,
+                    $withdrawal->destination,
+                    $withdrawal->currency,
+                );
 
-                WithdrawPayout::create([
-                    'withdrawal_id' => $withdrawal->id,
-                    'uuid' => $uuid,
-                    'payment_reference' => $cryptoPayment['data']['track_id'],
-                    'tries' => 0,
-                ]);
+                if ($cryptoPayment['status'] && $cryptoPayment['data'] !== null) {
+                    $transaction->status = 'processing';
+                    $transaction->save();
+
+                    broadcast(new TransactionStatusEvent($transaction));
+
+                    WithdrawPayout::create([
+                        'withdrawal_id' => $withdrawal->id,
+                        'uuid' => $uuid,
+                        'payment_reference' => $cryptoPayment['data']['track_id'],
+                        'tries' => 0,
+                    ]);
+                }
             }
         }
     }

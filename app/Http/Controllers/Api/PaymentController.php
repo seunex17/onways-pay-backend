@@ -159,7 +159,7 @@ class PaymentController extends Controller
                 ], ResponseAlias::HTTP_BAD_REQUEST);
             }
 
-            $transaction->status = 'processing';
+            $transaction->status = 'processed';
             $transaction->save();
 
             $request->user()->creditDeduct($withdrawal->amount, 'Withdrawal to '.$withdrawal->destination);
