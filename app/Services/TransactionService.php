@@ -74,25 +74,56 @@ class TransactionService
         $uuid = \Str::uuid()->toString();
 
         if ($exchange) {
-            $cryptoPayment = CryptoPaymentService::exchangePayout(
-                $exchange->amount_received,
-                $uuid,
-                $exchange->to_source,
-                $exchange->to_currency,
-            );
-
-            if ($cryptoPayment['status'] && $cryptoPayment['data'] !== null) {
-                $transaction->status = 'processing';
-                $transaction->save();
-
-                broadcast(new TransactionStatusEvent($transaction));
-
-                $exchangePayout = ExchangePayout::create([
-                    'exchange_id' => $exchange->id,
-                    'uuid' => $uuid,
-                    'payment_reference' => $cryptoPayment['data']['track_id'],
-                    'tries' => 0,
+            if ($exchange->to_type === 'momo') {
+                $touchPay = TouchPayService::sendMoney([
+                    'transaction_ref' => time(),
+                    'email' => $exchange->user->email,
+                    'firstname' => $exchange->user->first_name,
+                    'lastname' => $exchange->user->last_name,
+                    'amount' => $exchange->amount_received,
+                    'mobile_number' => $exchange->to_source,
+                    'provider' => $exchange->to_currency,
                 ]);
+
+                if ($touchPay['status']) {
+                    $transaction->status = 'processed';
+                    $transaction->save();
+
+                    $exchange->status = 'completed';
+                    $exchange->save();
+
+                    broadcast(new TransactionStatusEvent($transaction));
+                } else {
+                    // TODO - PUT TO LATER QUEUE DUE TO SEND FAILING
+                    $exchange->status = 'hold';
+                    $exchange->save();
+
+                    $transaction->status = 'processing';
+                    $transaction->save();
+
+                    broadcast(new TransactionStatusEvent($transaction));
+                }
+            } else {
+                $cryptoPayment = CryptoPaymentService::exchangePayout(
+                    $exchange->amount_received,
+                    $uuid,
+                    $exchange->to_source,
+                    $exchange->to_currency,
+                );
+
+                if ($cryptoPayment['status'] && $cryptoPayment['data'] !== null) {
+                    $transaction->status = 'processing';
+                    $transaction->save();
+
+                    broadcast(new TransactionStatusEvent($transaction));
+
+                    $exchangePayout = ExchangePayout::create([
+                        'exchange_id' => $exchange->id,
+                        'uuid' => $uuid,
+                        'payment_reference' => $cryptoPayment['data']['track_id'],
+                        'tries' => 0,
+                    ]);
+                }
             }
         }
     }

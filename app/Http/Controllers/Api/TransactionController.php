@@ -275,7 +275,7 @@ class TransactionController extends Controller
                 'email' => $request->user()->email,
                 'firstname' => $request->user()->first_name,
                 'lastname' => $request->user()->last_name,
-                'mobile_number' => $request->phone,
+                'mobile_number' => $request->from_source,
                 'otp' => $request->momo_pin ?? '',
                 'amount' => $request->amount,
                 'provider' => $request->from_currency,
