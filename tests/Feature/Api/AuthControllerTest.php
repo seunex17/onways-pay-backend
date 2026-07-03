@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\PasswordResetMail;
 use App\Mail\VerifyEmailMail;
 use App\Mail\WelcomeMail;
 use App\Models\TransactionPin;
@@ -326,4 +327,47 @@ test('setting transaction pin fails if email not found', function () {
         ->assertJson([
             'message' => __('email_not_found'),
         ]);
+});
+
+test('user can request a temporary password', function () {
+    Mail::fake();
+
+    $user = User::factory()->create([
+        'email' => 'user@example.com',
+        'password' => Hash::make('old-password'),
+    ]);
+
+    $user->createToken('mobile');
+
+    $response = $this->postJson('/api/forget-password', [
+        'email' => 'user@example.com',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'message' => __('password_reset_success'),
+        ]);
+
+    Mail::assertSent(PasswordResetMail::class, function (PasswordResetMail $mail) use ($user) {
+        return $mail->hasTo($user->email)
+            && strlen($mail->newPassword) === 16
+            && Hash::check($mail->newPassword, $user->fresh()->password);
+    });
+
+    expect($user->tokens()->exists())->toBeFalse();
+});
+
+test('forget password fails if email not found', function () {
+    Mail::fake();
+
+    $response = $this->postJson('/api/forget-password', [
+        'email' => 'nonexistent@example.com',
+    ]);
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'message' => __('email_not_found'),
+        ]);
+
+    Mail::assertNothingSent();
 });

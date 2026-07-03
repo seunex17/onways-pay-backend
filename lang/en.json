@@ -20,6 +20,7 @@
     "invalid_credentials": "Invalid email or password",
     "profile_updated": "Profile Updated!",
     "password_updated": "Password Updated!",
+    "password_reset_success": "Password has been reset. Please check your email for the temporary password.",
     "old_password_incorrect": "Old password is incorrect",
     "sms_send_failed": "Unable to send SMS Please try again later",
     "sms_sent_successfully": "OTP han been sent to you phone number",

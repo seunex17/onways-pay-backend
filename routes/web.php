@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Services\CryptoPaymentService;
 use App\Services\NotificationService;
+use App\Services\TopUpService;
 use App\Services\TouchPayService;
 use Illuminate\Support\Facades\Route;
 
@@ -14,12 +15,23 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-//    $user = User::find(1);
-//    $user->creditAdd(100000);
-//    NotificationService::sendPushNotification($user, [
-//        'title' => 'hello world',
-//        'body' => 'hello world',
-//    ]);
+    //    return \App\Services\TopUpService::detectOperator('0509635034', 'CI');
+    return TopUpService::topup([
+        'amount' => 100,
+        'operatorId' => 253,
+        'recipientPhone' => [
+            'number' => '0509635034',
+            'countryCode' => 'CI',
+        ],
+        'useLocalAmount' => true,
+    ]);
+
+    //    $user = User::find(1);
+    //    $user->creditAdd(100000);
+    //    NotificationService::sendPushNotification($user, [
+    //        'title' => 'hello world',
+    //        'body' => 'hello world',
+    //    ]);
 
     // $res = CryptoPaymentService::whiteLabel(20, time(), 'BNB');
     //    $res = CryptoPaymentService::payout(

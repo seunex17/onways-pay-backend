@@ -20,6 +20,7 @@
     "invalid_credentials": "E-mail ou mot de passe invalide",
     "profile_updated": "Profil mis à jour !",
     "password_updated": "Mot de passe mis à jour !",
+    "password_reset_success": "Le mot de passe a été réinitialisé. Veuillez consulter vos e-mails pour le mot de passe temporaire.",
     "old_password_incorrect": "L'ancien mot de passe est incorrect",
     "sms_send_failed": "Impossible d'envoyer le SMS. Veuillez réessayer plus tard",
     "sms_sent_successfully": "Le code OTP a été envoyé à votre numéro de téléphone",

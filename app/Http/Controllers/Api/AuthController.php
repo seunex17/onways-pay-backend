@@ -14,6 +14,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetMail;
 use App\Mail\VerifyEmailMail;
 use App\Mail\WelcomeMail;
 use App\Models\TransactionPin;
@@ -22,6 +23,7 @@ use App\Services\MessagingService;
 use Ichtrojan\Otp\Otp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
@@ -249,6 +251,39 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user,
             'token' => $token,
+        ], ResponseAlias::HTTP_OK);
+    }
+
+    public function forgetPassword(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email'],
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => $validate->errors()->first(),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => __('email_not_found'),
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
+        $newPassword = Str::password(16, true, true, true, false);
+
+        $user->password = Hash::make($newPassword);
+        $user->save();
+        $user->tokens()->delete();
+
+        Mail::to($user->email)->send(new PasswordResetMail($user, $newPassword));
+
+        return response()->json([
+            'message' => __('password_reset_success'),
         ], ResponseAlias::HTTP_OK);
     }
 }

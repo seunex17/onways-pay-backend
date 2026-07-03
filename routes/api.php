@@ -14,6 +14,7 @@ Route::post('/send-phone-verification', [ApiAuthController::class, 'sendPhoneVer
 Route::post('/verify-phone', [ApiAuthController::class, 'verifyPhone']);
 Route::post('/set-transaction-pin', [ApiAuthController::class, 'setTransactionPin']);
 Route::post('/login', [ApiAuthController::class, 'login']);
+Route::post('/forget-password', [ApiAuthController::class, 'forgetPassword']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // User Controller

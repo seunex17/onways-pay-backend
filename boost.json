@@ -1,10 +1,14 @@
 {
     "agents": [
-        "junie"
+        "junie",
+        "codex"
     ],
     "guidelines": true,
     "mcp": true,
     "nightwatch_mcp": false,
+    "packages": [
+        "climactic/laravel-credits"
+    ],
     "sail": false,
     "skills": [
         "laravel-best-practices",
