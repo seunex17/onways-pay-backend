@@ -16,7 +16,6 @@ namespace App\Http\Controllers\Api;
 use App\Events\PaymentRequestEvent;
 use App\Events\TransactionStatusEvent;
 use App\Http\Controllers\Controller;
-use App\Models\MomoPayment;
 use App\Models\PaymentRequest;
 use App\Models\Transaction;
 use App\Models\TransactionPin;
@@ -178,7 +177,7 @@ class PaymentController extends Controller
             if (! $cryptoPayment['status']) {
                 $errorType = $cryptoPayment['message']['error']['key'];
                 switch ($errorType) {
-                    case 'invalid_address': {
+                    case 'invalid_address':
                         $transaction->status = 'canceled';
                         $transaction->save();
 
@@ -190,8 +189,8 @@ class PaymentController extends Controller
                         return response()->json([
                             'message' => __('invalid_address'),
                         ], ResponseAlias::HTTP_BAD_REQUEST);
-                    }
-                    default: {
+
+                    default:
                         $transaction->status = 'processing';
                         $transaction->save();
 
@@ -199,7 +198,7 @@ class PaymentController extends Controller
                         $withdrawal->save();
 
                         break;
-                    }
+
                 }
             }
 

@@ -16,7 +16,6 @@ class Deposit extends Model
         'payment_source',
     ];
 
-
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);
