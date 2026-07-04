@@ -31,11 +31,17 @@ class Exchange extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Transaction, $this>
+     */
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\TopupController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -57,5 +58,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::put('/update-push-notification', [UserController::class, 'updatePushNotification']);
 
         Route::delete('/delete-account', [UserController::class, 'deleteAccount']);
+    });
+
+    // Topup Controller
+    Route::prefix('/topup')->group(function () {
+        Route::post('/detect-mobile-operator', [TopupController::class, 'detectMobileOperator']);
+        Route::post('/airtime', [TopupController::class, 'airtime']);
     });
 });

@@ -49,6 +49,10 @@ class TransactionService
             ->with('user')
             ->first();
 
+        if (! $deposit || ! $deposit->user) {
+            return;
+        }
+
         $deposit->user->creditAdd($deposit->amount, 'Deposit');
 
         $transaction->status = 'processed';

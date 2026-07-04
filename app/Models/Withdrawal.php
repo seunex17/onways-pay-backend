@@ -18,11 +18,17 @@ class Withdrawal extends Model
         'status',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Transaction, $this>
+     */
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);

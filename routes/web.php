@@ -15,9 +15,9 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-    //    return \App\Services\TopUpService::detectOperator('0509635034', 'CI');
+    // return TopUpService::detectOperator('0509635034', 'CI');
     return TopUpService::topup([
-        'amount' => 100,
+        'amount' => 50,
         'operatorId' => 253,
         'recipientPhone' => [
             'number' => '0509635034',
