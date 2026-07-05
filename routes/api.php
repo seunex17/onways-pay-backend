@@ -62,6 +62,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // Topup Controller
     Route::prefix('/topup')->group(function () {
+        Route::get('/operators', [TopupController::class, 'operators']);
+        Route::get('/data-plans', [TopupController::class, 'operatorDataPlans']);
+
         Route::post('/detect-mobile-operator', [TopupController::class, 'detectMobileOperator']);
         Route::post('/airtime', [TopupController::class, 'airtime']);
     });

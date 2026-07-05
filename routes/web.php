@@ -15,16 +15,17 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
+    //return TopUpService::getOperators('CI');
     // return TopUpService::detectOperator('0509635034', 'CI');
-    return TopUpService::topup([
-        'amount' => 50,
-        'operatorId' => 253,
-        'recipientPhone' => [
-            'number' => '0509635034',
-            'countryCode' => 'CI',
-        ],
-        'useLocalAmount' => true,
-    ]);
+    //    return TopUpService::topup([
+    //        'amount' => 50,
+    //        'operatorId' => 253,
+    //        'recipientPhone' => [
+    //            'number' => '0509635034',
+    //            'countryCode' => 'CI',
+    //        ],
+    //        'useLocalAmount' => true,
+    //    ]);
 
     //    $user = User::find(1);
     //    $user->creditAdd(100000);

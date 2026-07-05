@@ -52,6 +52,8 @@ class TopUpService
     protected static function parseResponse(Response $response): array
     {
         if ($response->failed()) {
+            \Log::info($response->json());
+
             return [
                 'error' => true,
                 'status' => $response->status(),
@@ -133,11 +135,206 @@ class TopUpService
         return static::post('topups', $data);
     }
 
-    public static function getFxRate(int $amount, int $operatorId)
+    public static function getFxRate(int $amount, int $operatorId): array
     {
         return static::post('operators/fx-rate', [
             'amount' => $amount,
             'operatorId' => $operatorId,
         ]);
+    }
+
+    public static function getOperatorById(string $operatorId): array
+    {
+        return static::get("operators/$operatorId");
+    }
+
+    public static function getOperators(string $countryCode): array
+    {
+        return static::get("operators/countries/$countryCode", [
+            'includeData' => true,
+        ]);
+    }
+
+    public static function getDataOperators(string $countryCode): array
+    {
+        $response = static::getOperators($countryCode);
+
+        if (isset($response['error'])) {
+            return $response;
+        }
+
+        return array_values(array_filter(array_map(
+            fn (array $operator): ?array => static::formatDataOperatorSummary($operator),
+            static::operatorsFromResponse($response),
+        )));
+    }
+
+    public static function getDataPlans(string $countryCode): array
+    {
+        $response = static::getOperators($countryCode);
+
+        if (isset($response['error'])) {
+            return $response;
+        }
+
+        return [
+            'country_code' => strtoupper($countryCode),
+            'operators' => array_values(array_filter(array_map(
+                fn (array $operator): ?array => static::formatDataOperator($operator),
+                static::operatorsFromResponse($response),
+            ))),
+        ];
+    }
+
+    public static function getOperatorDataPlans(string $operatorId): array
+    {
+        $response = static::getOperatorById($operatorId);
+
+        if (isset($response['error'])) {
+            return $response;
+        }
+
+        if (! (bool) ($response['data'] ?? false)) {
+            return [];
+        }
+
+        return static::formatOperatorDataPlans($response);
+    }
+
+    protected static function operatorsFromResponse(array $response): array
+    {
+        if (isset($response['content']) && is_array($response['content'])) {
+            return $response['content'];
+        }
+
+        if (array_is_list($response)) {
+            return $response;
+        }
+
+        return [];
+    }
+
+    protected static function formatDataOperator(array $operator): ?array
+    {
+        if (! (bool) ($operator['data'] ?? false)) {
+            return null;
+        }
+
+        $plans = static::formatPlans(
+            $operator['localFixedAmounts'] ?? [],
+            $operator['localFixedAmountsDescriptions'] ?? [],
+        );
+
+        return [
+            'id' => $operator['operatorId'] ?? $operator['id'] ?? null,
+            'name' => $operator['name'] ?? null,
+            'logo_url' => $operator['logoUrls'][0] ?? null,
+            'min_amount' => $operator['localMinAmount'] ?? null,
+            'max_amount' => $operator['localMaxAmount'] ?? null,
+            'plans' => $plans,
+        ];
+    }
+
+    protected static function formatDataOperatorSummary(array $operator): ?array
+    {
+        if (! (bool) ($operator['data'] ?? false)) {
+            return null;
+        }
+
+        return [
+            'name' => $operator['name'] ?? null,
+            'id' => $operator['operatorId'] ?? $operator['id'] ?? null,
+            'logo_url' => $operator['logoUrls'][0] ?? null,
+        ];
+    }
+
+    protected static function formatOperatorDataPlans(array $operator): array
+    {
+        $operatorId = (string) ($operator['operatorId'] ?? $operator['id'] ?? '');
+        $operatorName = (string) ($operator['name'] ?? 'Data plan');
+        $amounts = $operator['localFixedAmounts'] ?? [];
+        $descriptions = $operator['localFixedAmountsDescriptions'] ?? [];
+
+        if (! is_array($amounts)) {
+            return [];
+        }
+
+        if (! is_array($descriptions)) {
+            $descriptions = [];
+        }
+
+        return array_map(
+            fn (int|float|string $amount): array => static::formatOperatorDataPlan(
+                $operatorId,
+                $operatorName,
+                $amount,
+                static::descriptionForAmount($descriptions, $amount),
+            ),
+            array_values($amounts),
+        );
+    }
+
+    protected static function formatOperatorDataPlan(
+        string $operatorId,
+        string $operatorName,
+        int|float|string $amount,
+        ?string $description,
+    ): array {
+        $parsedDescription = static::parsePlanDescription($description);
+        $price = (float) $amount;
+
+        return [
+            'id' => $operatorId.'-'.$amount,
+            'name' => $description ?: $operatorName.' '.number_format($price, 2, '.', ''),
+            'price' => $price,
+            'dataAmount' => $parsedDescription['dataAmount'],
+            'validity' => $parsedDescription['validity'],
+            'description' => $description,
+        ];
+    }
+
+    protected static function parsePlanDescription(?string $description): array
+    {
+        if (! $description) {
+            return [
+                'dataAmount' => null,
+                'validity' => null,
+            ];
+        }
+
+        $parts = preg_split('/\s+-\s+/', $description, 2);
+
+        return [
+            'dataAmount' => $parts[0] ?? null,
+            'validity' => $parts[1] ?? null,
+        ];
+    }
+
+    protected static function formatPlans(array $amounts, array $descriptions): array
+    {
+        return array_map(
+            fn (int|float|string $amount): array => [
+                'amount' => $amount,
+                'description' => static::descriptionForAmount($descriptions, $amount),
+            ],
+            array_values($amounts),
+        );
+    }
+
+    protected static function descriptionForAmount(array $descriptions, int|float|string $amount): ?string
+    {
+        $keys = [
+            (string) $amount,
+            number_format((float) $amount, 2, '.', ''),
+            number_format((float) $amount, 0, '.', ''),
+        ];
+
+        foreach ($keys as $key) {
+            if (isset($descriptions[$key]) && is_string($descriptions[$key])) {
+                return $descriptions[$key];
+            }
+        }
+
+        return null;
     }
 }

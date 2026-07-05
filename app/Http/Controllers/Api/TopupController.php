@@ -25,6 +25,33 @@ use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class TopupController extends Controller
 {
+    public function operators(Request $request)
+    {
+        $response = TopUpService::getDataOperators($request->user()->country_code);
+
+        if (isset($response['error'])) {
+            return response()->json([
+                'message' => __('service_not_available'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json($response, ResponseAlias::HTTP_OK);
+    }
+
+    public function operatorDataPlans(Request $request)
+    {
+        $operator = $request->query('operator');
+        $response = TopUpService::getOperatorDataPlans($operator);
+
+        if (isset($response['error'])) {
+            return response()->json([
+                'message' => __('service_not_available'),
+            ], ResponseAlias::HTTP_BAD_REQUEST);
+        }
+
+        return response()->json($response, ResponseAlias::HTTP_OK);
+    }
+
     public function detectMobileOperator(Request $request)
     {
         $validate = Validator::make($request->all(), [
