@@ -13,6 +13,8 @@ Broadcast::channel('transaction.{id}', function ($user, $id) {
     return $transaction && (int) $user->id === (int) $transaction->user_id;
 });
 
+Broadcast::channel('user.{id}', fn ($user, $id) => (int) $user->id === (int) $id);
+
 Broadcast::channel('payment-request.{id}', function ($user, $id) {
     $paymentRequest = PaymentRequest::find($id);
 

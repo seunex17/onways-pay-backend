@@ -108,4 +108,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Withdrawal::class);
     }
+
+    public function fuelVoucherPurchases(): HasMany
+    {
+        return $this->hasMany(FuelVoucherPurchase::class);
+    }
+
+    public function fuelVouchers(): HasMany
+    {
+        return $this->hasMany(FuelVoucher::class);
+    }
 }

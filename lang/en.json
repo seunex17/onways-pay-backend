@@ -41,5 +41,16 @@
     "withdraw_processed_info": "The amount of :amount :currency has been send to your :method wallet",
     "invalid_address": "The specified address is invalid. Please check and try again.",
     "minimum_withdrawal_amount": "The minimum withdraw amount is :amount",
-    "service_not_available": "Service is not available please try again later"
+    "service_not_available": "Service is not available please try again later",
+    "fuel_voucher_title": "Fuel Voucher",
+    "fuel_voucher_idempotency_key_required": "A valid Idempotency-Key header is required.",
+    "fuel_voucher_idempotency_key_used": "This idempotency key has already been used.",
+    "fuel_voucher_price_not_configured": "The fuel price per litre has not been configured.",
+    "fuel_voucher_recipient_phone_required": "A valid recipient phone number is required.",
+    "fuel_voucher_transaction_description": ":litres L fuel voucher",
+    "fuel_voucher_authorization_required": "Approve the Mobile Money request on your phone.",
+    "fuel_voucher_issued": "Fuel voucher issued successfully.",
+    "fuel_voucher_cannot_be_redeemed": "This voucher cannot be redeemed.",
+    "fuel_voucher_redemption_already_processed": "This partner redemption has already been processed.",
+    "fuel_voucher_station_payment_failed": "The fuel station payment could not be completed."
 }

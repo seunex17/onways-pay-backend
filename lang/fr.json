@@ -41,5 +41,16 @@
     "withdraw_processed_info": "Le montant de :amount :currency a été envoyé vers votre portefeuille :method",
     "invalid_address": "L'adresse spécifiée est invalide. Veuillez vérifier et réessayer.",
     "minimum_withdrawal_amount": "Le montant minimum de retrait est de :amount",
-    "service_not_available": "Le service n'est pas disponible, veuillez réessayer plus tard"
+    "service_not_available": "Le service n'est pas disponible, veuillez réessayer plus tard",
+    "fuel_voucher_title": "Bon de carburant",
+    "fuel_voucher_idempotency_key_required": "Un en-tête Idempotency-Key valide est requis.",
+    "fuel_voucher_idempotency_key_used": "Cette clé d'idempotence a déjà été utilisée.",
+    "fuel_voucher_price_not_configured": "Le prix du carburant par litre n'a pas été configuré.",
+    "fuel_voucher_recipient_phone_required": "Un numéro de téléphone valide est requis pour le bénéficiaire.",
+    "fuel_voucher_transaction_description": "Bon de carburant de :litres L",
+    "fuel_voucher_authorization_required": "Approuvez la demande Mobile Money sur votre téléphone.",
+    "fuel_voucher_issued": "Bon de carburant émis avec succès.",
+    "fuel_voucher_cannot_be_redeemed": "Ce bon ne peut pas être utilisé.",
+    "fuel_voucher_redemption_already_processed": "Cette utilisation partenaire a déjà été traitée.",
+    "fuel_voucher_station_payment_failed": "Le paiement de la station-service n'a pas pu être effectué."
 }

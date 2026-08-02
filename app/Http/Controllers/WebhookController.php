@@ -17,11 +17,13 @@ use App\Events\TransactionStatusEvent;
 use App\Models\CryptoPayment;
 use App\Models\Exchange;
 use App\Models\ExchangePayout;
+use App\Models\FuelVoucherPurchase;
 use App\Models\MomoPayment;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Withdrawal;
 use App\Models\WithdrawPayout;
+use App\Services\FuelVoucherService;
 use App\Services\NotificationService;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
@@ -123,19 +125,22 @@ class WebhookController extends Controller
         }
     }
 
-    public function handleTouchpay(Request $request)
+    public function handleTouchpay(Request $request, FuelVoucherService $fuelVoucherService)
     {
         $data = $request->all();
         $ref = $data['partner_transaction_id'];
         $transaction = Transaction::with('user')
             ->where('reference', $ref)->first();
 
-        if ($transaction) {
-            if ($data['status'] === 'FAILED') {
-                $transaction->status = 'canceled';
-                $transaction->save();
-                broadcast(new TransactionStatusEvent($transaction));
-            }
+        if (! $transaction) {
+            return response()->noContent();
+        }
+
+        if ($data['status'] === 'FAILED') {
+            $transaction->status = 'canceled';
+            $transaction->save();
+            $transaction->fuelVoucherPurchase?->update(['status' => 'cancelled']);
+            broadcast(new TransactionStatusEvent($transaction));
         }
 
         if ($data['status'] === 'SUCCESSFUL') {
@@ -145,7 +150,12 @@ class WebhookController extends Controller
                 $momoPayment->save();
             }
 
-            TransactionService::process($transaction);
+            if ($transaction->purpose === 'fuel_voucher') {
+                $purchase = FuelVoucherPurchase::query()->where('transaction_id', $transaction->id)->firstOrFail();
+                $fuelVoucherService->complete($purchase);
+            } else {
+                TransactionService::process($transaction);
+            }
         }
     }
 

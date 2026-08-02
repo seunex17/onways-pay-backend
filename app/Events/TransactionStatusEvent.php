@@ -35,6 +35,16 @@ class TransactionStatusEvent implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
-        return $this->transaction->toArray();
+        return [
+            'id' => $this->transaction->id,
+            'user_id' => (string) $this->transaction->user_id,
+            'type' => $this->transaction->type,
+            'purpose' => $this->transaction->purpose,
+            'amount' => number_format((float) $this->transaction->amount, 2, '.', ''),
+            'description' => $this->transaction->description,
+            'status' => $this->transaction->status,
+            'reference' => $this->transaction->reference,
+            'created_at' => $this->transaction->created_at?->toISOString(),
+        ];
     }
 }

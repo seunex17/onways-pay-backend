@@ -67,6 +67,22 @@ class Transaction extends Model
     }
 
     /**
+     * Get the gift card order associated with the transaction.
+     *
+     * @return HasOne<GiftCardOrder, $this>
+     */
+    public function giftCardOrder(): HasOne
+    {
+        return $this->hasOne(GiftCardOrder::class);
+    }
+
+    /** @return HasOne<FuelVoucherPurchase, $this> */
+    public function fuelVoucherPurchase(): HasOne
+    {
+        return $this->hasOne(FuelVoucherPurchase::class);
+    }
+
+    /**
      * Get the withdrawal associated with the transaction.
      *
      * @return HasOne<Withdrawal, $this>
