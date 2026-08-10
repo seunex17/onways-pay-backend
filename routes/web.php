@@ -15,7 +15,7 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-    return GiftCardService::fxRates('XOF', 1000);
+    // return GiftCardService::fxRates('XOF', 1000);
 
     //    $user = User::find(1);
     //    $user->creditAdd(100000);
@@ -36,21 +36,19 @@ Route::get('/test', function () {
     // $res = CryptoPaymentService::getBalance();
     // dd($res);
     // TransactionStatusEvent::dispatch(Transaction::latest()->first());
-    $data = [
-        'transaction_ref' => time(),
-        'email' => 'jhon@mail.com',
-        'firstname' => 'Jhon',
-        'lastname' => 'Doe',
-        'amount' => 10,
-        'mobile_number' => '0594124241',
-        'provider' => 'mtn',
-    ];
+    //    $data = [
+    //        'transaction_ref' => time(),
+    //        'email' => 'jhon@mail.com',
+    //        'firstname' => 'Jhon',
+    //        'lastname' => 'Doe',
+    //        'amount' => 10,
+    //        'mobile_number' => '0594124241',
+    //        'provider' => 'mtn',
+    //    ];
 
     // $res = TouchPayService::collectPayment($data);
     // $res = TouchPayService::checkBalance();
     // $res = TouchPayService::sendMoney($data);
-
-    // dd($res);
 });
 
 Route::name('webhook.')->prefix('webhook')->group(function () {

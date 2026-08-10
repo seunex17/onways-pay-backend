@@ -25,6 +25,7 @@
     "sms_send_failed": "Impossible d'envoyer le SMS. Veuillez réessayer plus tard",
     "sms_sent_successfully": "Le code OTP a été envoyé à votre numéro de téléphone",
     "otp_sms_message": "Code de réinitialisation PIN :appName : :otp. Valide pendant :minute minutes.",
+    "otp_sms_activate_message": "Votre code de vérification téléphonique : :otp. Valable pendant :minute minutes.",
     "too_many_attempts": "Trop de tentatives. Veuillez patienter :seconds secondes avant de réessayer",
     "otp_not_verified": "Code OTP invalide, veuillez réessayer",
     "otp_verified": "Code OTP vérifié",

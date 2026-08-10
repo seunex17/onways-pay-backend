@@ -20,6 +20,7 @@ class MomoPayment extends Model
         'recipient_number',
         'status',
         'message',
+        'recipient_country_code',
     ];
 
     protected function casts(): array

@@ -35,6 +35,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Transaction Controller
     Route::get('/transactions', [TransactionController::class, 'transactions']);
     Route::get('/recent-transactions', [TransactionController::class, 'recentTransactions']);
+    Route::get('/exchange-recipients', [TransactionController::class, 'exchangeRecipients']);
+    Route::get('/exchange-history', [TransactionController::class, 'exchangeHistory']);
+    Route::get('/exchange-tracking', [TransactionController::class, 'exchangeTracking']);
 
     Route::post('/deposit', [TransactionController::class, 'deposit']);
     Route::post('/prepare-exchange', [TransactionController::class, 'prepareExchange']);

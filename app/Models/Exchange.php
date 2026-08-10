@@ -20,6 +20,8 @@ class Exchange extends Model
         'amount_received',
         'fee',
         'status',
+        'from_country_code',
+        'to_country_code',
     ];
 
     protected function casts(): array

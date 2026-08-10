@@ -27,6 +27,7 @@ class MessagingService
                 'password' => config('mtarget.password'),
                 'msisdn' => '+'.$to,
                 'msg' => $message,
+                'serviceid' => config('mtarget.service_id'),
                 'sender' => config('mtarget.sender'),
             ])->json();
 

@@ -156,9 +156,8 @@ class AuthController extends Controller
         $phoneNumber = $user->phone_code.$request->phone;
         $otp = (new Otp)->generate($phoneNumber, 'numeric', 6, 10);
 
-        MessagingService::sendSms($phoneNumber, __('otp_sms_message', [
+        MessagingService::sendSms($phoneNumber, __('otp_sms_activate_message', [
             'otp' => $otp->token,
-            'appName' => config('app.name'),
             'minute' => '10',
         ]));
 

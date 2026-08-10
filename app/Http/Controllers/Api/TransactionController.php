@@ -18,6 +18,7 @@ use App\Models\CryptoPayment;
 use App\Models\Deposit;
 use App\Models\Exchange;
 use App\Models\MomoPayment;
+use App\Models\MonoRecipient;
 use App\Models\Transaction;
 use App\Services\CryptoPaymentService;
 use App\Services\ExchangeService;
@@ -182,7 +183,7 @@ class TransactionController extends Controller
             $amountToReceive = number_format($amountInUsd - $transactionFee, 2, '.', '');
         } elseif ($request->exchange_from_mode === 'momo' && $request->exchange_to_mode === 'momo') {
 
-            if ($amount < 10) {
+            if ($amount < config('exchange.min_amount')) {
                 return response()->json([
                     'message' => __('invalid_amount'),
                 ], ResponseAlias::HTTP_BAD_REQUEST);
@@ -191,6 +192,7 @@ class TransactionController extends Controller
             $transactionFee = ($fee / 100) * $amount;
             $transactionFee = number_format($transactionFee, 2, '.', '');
             $amountToReceive = number_format($amount - $transactionFee, 2, '.', '');
+            $amountToReceive = $amountToReceive - config('fees.maintenance_fee');
         } elseif ($request->exchange_from_mode === 'crypto' && $request->exchange_to_mode === 'momo') {
 
             if ($amount < 10) {
@@ -223,6 +225,8 @@ class TransactionController extends Controller
         return response()->json([
             'amountToReceive' => $amountToReceive,
             'transactionFee' => $transactionFee,
+            'maintenanceFee' => config('fees.maintenance_fee'),
+            'currency' => 'CFA',
         ], ResponseAlias::HTTP_OK);
     }
 
@@ -276,7 +280,7 @@ class TransactionController extends Controller
                 'firstname' => $request->user()->first_name,
                 'lastname' => $request->user()->last_name,
                 'mobile_number' => $request->from_source,
-                'otp' => $request->momo_pin ?? '',
+                'otp' => $request->otp ?? '',
                 'amount' => $request->amount,
                 'provider' => $request->from_currency,
                 'transaction_ref' => $transaction->reference,
@@ -302,6 +306,17 @@ class TransactionController extends Controller
                 'service_code' => $data['serviceCode'],
                 'recipient_number' => $data['recipientNumber'],
                 'status' => $data['status'],
+                'recipient_country_code' => $request->from_country_code,
+            ]);
+
+            MonoRecipient::updateOrCreate([
+                'user_id' => $request->user()->id,
+                'phone_code' => $request->to_phone_code,
+                'phone_number' => $request->to_source,
+            ], [
+                'country_code' => $request->to_country_code,
+                'provider' => $request->to_currency,
+                'last_used_at' => now(),
             ]);
         }
 
@@ -317,6 +332,8 @@ class TransactionController extends Controller
             'amount' => $request->amount,
             'amount_received' => $request->amount_received,
             'fee' => $request->fee,
+            'from_country_code' => $request->from_country_code,
+            'to_country_code' => $request->to_country_code,
         ]);
 
         return response()->json([
@@ -354,5 +371,38 @@ class TransactionController extends Controller
             ->get();
 
         return response()->json($transactions, ResponseAlias::HTTP_OK);
+    }
+
+    public function exchangeRecipients(Request $request)
+    {
+        $recipients = MonoRecipient::where('user_id', $request->user()->id)
+            ->latest('last_used_at')
+            ->take(100)
+            ->get();
+
+        return response()->json($recipients, ResponseAlias::HTTP_OK);
+    }
+
+    public function exchangeHistory(Request $request)
+    {
+        $exchanges = Exchange::where('user_id', $request->user()->id)
+            ->with('transaction')
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($exchanges, ResponseAlias::HTTP_OK);
+    }
+
+    public function exchangeTracking(Request $request)
+    {
+        $transactions = Transaction::where('user_id', $request->user()->id)
+            ->where('reference', $request->reference)
+            ->first();
+
+        $exchange = Exchange::where('transaction_id', $transactions->id)
+            ->with('transaction')
+            ->first();
+
+        return response()->json($exchange, ResponseAlias::HTTP_OK);
     }
 }
