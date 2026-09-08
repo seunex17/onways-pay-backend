@@ -12,9 +12,11 @@
     ],
     "sail": false,
     "skills": [
+        "infer-conventions",
         "laravel-best-practices",
+        "testing-best-practices",
         "pulse-development",
-        "pest-testing",
+        "inertia-svelte-development",
         "echo-development",
         "tailwindcss-development"
     ]

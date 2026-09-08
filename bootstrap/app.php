@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Middleware\SetLocaleMiddleware;
+    use App\Http\Middleware\HandleInertiaRequests;
+    use App\Http\Middleware\SetLocaleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->preventRequestForgery(except: [
             'webhook/*',
             'broadcasting/auth',
+        ]);
+        $middleware->web(append: [
+            HandleInertiaRequests::class,
         ]);
     })
     ->withBroadcasting(
