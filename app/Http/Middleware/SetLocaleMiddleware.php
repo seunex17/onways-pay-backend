@@ -18,10 +18,14 @@ use Illuminate\Http\Request;
 
 class SetLocaleMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
-        $locale = $request->header('Accept-Language');
-        if (in_array($locale, ['en', 'fr', 'ar'])) {
+        $locale = $request->hasSession()
+            ? $request->session()->get('locale', $request->header('Accept-Language', config('app.locale')))
+            : $request->header('Accept-Language', config('app.locale'));
+        $locale = is_string($locale) ? mb_substr($locale, 0, 2) : config('app.locale');
+
+        if (in_array($locale, ['en', 'fr'], true)) {
             app()->setLocale($locale);
         }
 

@@ -9,10 +9,20 @@ use App\Services\GiftCardService;
 use App\Services\NotificationService;
 use App\Services\TouchPayService;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => Inertia::render('Home'))->name('home');
+Route::get('/services', fn () => Inertia::render('Services'))->name('services');
+Route::get('/how-it-works', fn () => Inertia::render('HowItWorks'))->name('how-it-works');
+Route::get('/security', fn () => Inertia::render('Security'))->name('security');
+Route::get('/faq', fn () => Inertia::render('Faq'))->name('faq');
+Route::get('/contact', fn () => Inertia::render('Contact'))->name('contact');
+Route::post('/language/{locale}', function (string $locale) {
+    abort_unless(in_array($locale, ['en', 'fr'], true), 404);
+    session(['locale' => $locale]);
+
+    return back();
+})->name('language.update');
 
 Route::get('/test', function () {
     // return GiftCardService::fxRates('XOF', 1000);
