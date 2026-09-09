@@ -24,6 +24,15 @@ it('renders document attributes in the Blade root for hydration', function () {
         ->assertSee('<html lang="en" data-theme="onways-light">', false);
 });
 
+it('uses the configured application locale when no language is saved', function () {
+    config()->set('app.locale', 'fr');
+
+    $this->withHeader('Accept-Language', 'en-US')->get('/')
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('locale', 'fr')
+            ->where('language', fn (Collection $language): bool => $language->get('landing.nav.home') === 'Accueil'));
+});
+
 it('persists French and shares Laravel translations with subsequent pages', function () {
     $this->from('/services')->post('/language/fr')
         ->assertRedirect('/services')
