@@ -6,8 +6,8 @@
     import { __ } from '../lib/i18n';
 
     const services = [
-        ['↔', 'money', false], ['◉', 'airtime', false], ['◆', 'gift', false],
-        ['⌁', 'fuel', false], ['▤', 'bills', true], ['▦', 'qr', false], ['▰', 'visa', false],
+        ['arrow-left-right', 'money', false], ['phone', 'airtime', false], ['gift', 'gift', false],
+        ['fuel', 'fuel', false], ['bills', 'bills', true], ['qr', 'qr', false], ['card', 'visa', false],
     ] as const;
 </script>
 

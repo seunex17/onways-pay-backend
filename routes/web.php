@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('Home'))->name('home');
-Route::get('/services', fn () => Inertia::render('Services'))->name('services');
-Route::get('/how-it-works', fn () => Inertia::render('HowItWorks'))->name('how-it-works');
-Route::get('/security', fn () => Inertia::render('Security'))->name('security');
-Route::get('/faq', fn () => Inertia::render('Faq'))->name('faq');
-Route::get('/contact', fn () => Inertia::render('Contact'))->name('contact');
+Route::redirect('/services', '/#services')->name('services');
+Route::redirect('/how-it-works', '/#how')->name('how-it-works');
+Route::redirect('/security', '/#security')->name('security');
+Route::redirect('/faq', '/#faq')->name('faq');
+Route::redirect('/contact', '/#contact')->name('contact');
 Route::post('/language/{locale}', function (string $locale) {
     abort_unless(in_array($locale, ['en', 'fr'], true), 404);
     session(['locale' => $locale]);
